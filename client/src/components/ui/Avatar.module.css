@@ -1,0 +1,37 @@
+.avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  font-family: var(--font-ui);
+  font-weight: 600;
+  color: var(--avatar-ink);
+  user-select: none;
+  flex-shrink: 0;
+  line-height: 1;
+}
+
+.sm {
+  width: 24px;
+  height: 24px;
+  font-size: var(--fs-xs);
+}
+
+.md {
+  width: 32px;
+  height: 32px;
+  font-size: var(--fs-sm);
+}
+
+.lg {
+  width: 40px;
+  height: 40px;
+  font-size: var(--fs-md);
+}
+
+.color1 { background: var(--avatar-1); }
+.color2 { background: var(--avatar-2); }
+.color3 { background: var(--avatar-3); }
+.color4 { background: var(--avatar-4); }
+.color5 { background: var(--avatar-5); }
+.color6 { background: var(--avatar-6); }

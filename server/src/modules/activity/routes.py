@@ -24,3 +24,4 @@ def handle_list_activity(tenant_id: str):
         limit=limit,
     )
     return jsonify({"data": activities, "nextCursor": next_cursor}), 200
+

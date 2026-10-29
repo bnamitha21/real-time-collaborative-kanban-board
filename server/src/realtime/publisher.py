@@ -31,3 +31,4 @@ def publish_to_user(user_id: str, event: str, payload: dict[str, Any]) -> None:
     if sio is not None:
         room = f"user:{user_id}"
         sio.emit(event, payload, room=room)
+

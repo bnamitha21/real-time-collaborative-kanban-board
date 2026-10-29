@@ -200,3 +200,30 @@ def remove_tenant_member(tenant_id: str, target_user_id: str) -> None:
                 raise not_found("Membership not found")
 
     with_tx(_remove)
+
+
+def list_tenant_members(tenant_id: str) -> list[dict[str, Any]]:
+    def _list(conn: Connection) -> list[dict[str, Any]]:
+        with conn.cursor() as cur:
+            cur.execute(
+                """
+                SELECT u.id, u.name, u.email, m.role
+                FROM memberships m
+                JOIN users u ON u.id = m.user_id
+                WHERE m.tenant_id = %s
+                ORDER BY u.name ASC;
+                """,
+                (tenant_id,),
+            )
+            return [
+                {
+                    "id": str(row[0]),
+                    "name": row[1],
+                    "email": str(row[2]),
+                    "role": row[3],
+                }
+                for row in cur.fetchall()
+            ]
+
+    return with_tx(_list)
+

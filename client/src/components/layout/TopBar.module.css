@@ -1,0 +1,206 @@
+.topBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 52px;
+  padding: 0 var(--s4);
+  background: var(--surface);
+  border-bottom: 1px solid var(--line);
+  position: relative;
+  z-index: 100;
+  gap: var(--s4);
+}
+
+.leftSection {
+  display: flex;
+  align-items: center;
+  gap: var(--s3);
+  min-width: 0;
+}
+
+.appTitle {
+  font-size: var(--fs-md);
+  font-weight: 600;
+  color: var(--ink);
+  white-space: nowrap;
+  letter-spacing: -0.01em;
+}
+
+.divider {
+  width: 1px;
+  height: 20px;
+  background: var(--line);
+  flex-shrink: 0;
+}
+
+.switchers {
+  display: flex;
+  align-items: center;
+  gap: var(--s2);
+}
+
+.selectButton {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s2);
+  height: 32px;
+  padding: 0 var(--s3);
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  color: var(--ink);
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 150ms ease, border-color 150ms ease;
+  white-space: nowrap;
+}
+
+.selectButton:hover {
+  background: var(--primary-tint);
+  border-color: var(--primary);
+}
+
+.plainTextOrg {
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  color: var(--ink-2);
+  padding: 0 var(--s2);
+  white-space: nowrap;
+}
+
+.rightSection {
+  display: flex;
+  align-items: center;
+  gap: var(--s3);
+  flex-shrink: 0;
+}
+
+.statusIndicator {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s1);
+  font-size: var(--fs-xs);
+  color: var(--ink-2);
+}
+
+.statusDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--online);
+}
+
+.statusDot.reconnecting {
+  background: var(--warn);
+}
+
+.statusDot.offline {
+  background: var(--offline);
+}
+
+.userMenuWrapper {
+  position: relative;
+}
+
+.userButton {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s2);
+  padding: 2px 6px;
+  border-radius: var(--radius);
+  cursor: pointer;
+  background: transparent;
+  border: 1px solid transparent;
+  transition: background-color 150ms ease;
+}
+
+.userButton:hover {
+  background: var(--surface-2);
+  border-color: var(--line);
+}
+
+.dropdownMenu {
+  position: absolute;
+  top: calc(100% + var(--s1));
+  right: 0;
+  min-width: 200px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-md);
+  padding: var(--s1);
+  display: flex;
+  flex-direction: column;
+  z-index: 200;
+}
+
+.dropdownMenuLeft {
+  left: 0;
+  right: auto;
+}
+
+.menuHeader {
+  padding: var(--s2) var(--s3);
+  border-bottom: 1px solid var(--line);
+  margin-bottom: var(--s1);
+}
+
+.menuUserName {
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.menuUserEmail {
+  font-size: var(--fs-xs);
+  color: var(--ink-3);
+  text-overflow: ellipsis;
+  overflow: hidden;
+}
+
+.menuItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: var(--s2) var(--s3);
+  font-size: var(--fs-sm);
+  color: var(--ink);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  text-align: left;
+  border: none;
+  background: transparent;
+  transition: background-color 120ms ease;
+}
+
+.menuItem:hover {
+  background: var(--surface-2);
+}
+
+.menuItemActive {
+  background: var(--primary-tint);
+  color: var(--primary);
+  font-weight: 600;
+}
+
+.roleTag {
+  font-size: var(--fs-xs);
+  color: var(--ink-3);
+  text-transform: capitalize;
+}
+
+.themeToggle {
+  cursor: pointer;
+  padding: var(--s1) var(--s2);
+  color: var(--ink-2);
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+}
+
+.themeToggle:hover {
+  color: var(--ink);
+  background: var(--surface-2);
+}

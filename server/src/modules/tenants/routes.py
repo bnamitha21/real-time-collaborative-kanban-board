@@ -10,6 +10,7 @@ from server.src.modules.tenants.service import (
     add_tenant_member,
     delete_tenant,
     get_tenant,
+    list_tenant_members,
     remove_tenant_member,
     update_tenant,
 )
@@ -26,6 +27,15 @@ tenants_bp = Blueprint("tenants", __name__, url_prefix="/api/v1/tenants")
 def handle_get_tenant(tenant_id: str):
     tenant = get_tenant(tenant_id)
     return jsonify({"data": tenant}), 200
+
+
+@tenants_bp.get("/<tenant_id>/members")
+@authenticate
+@validate_request()
+@require_tenant_access("tenant.read")
+def handle_list_members(tenant_id: str):
+    members = list_tenant_members(tenant_id)
+    return jsonify({"data": members}), 200
 
 
 @tenants_bp.patch("/<tenant_id>")

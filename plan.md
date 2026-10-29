@@ -1344,7 +1344,7 @@ Warm paper background, deep teal as the single brand colour, terracotta reserved
 | `--warn`                        | `#B7791F`             | conflicts, reconnecting       |
 | `--online` / `--offline`        | `#2E8B57` / `#9AA3A9` | presence dots                 |
 
-- [ ] **8.1 `client/src/styles/tokens.css`**
+- [x] **8.1 `client/src/styles/tokens.css`**
 
 ```css
 :root {
@@ -1413,11 +1413,11 @@ Warm paper background, deep teal as the single brand colour, terracotta reserved
 }
 ```
 
-- [ ] **8.2 Base styles** `client/src/styles/base.css`: import fonts (`@fontsource/source-sans-3/400.css`, `600.css`, `@fontsource/jetbrains-mono/400.css`), reset, `body { background: var(--bg); color: var(--ink); font: 400 var(--fs-sm)/1.5 var(--font-ui); }`, `:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }`, `@media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }`.
-- [ ] **8.3 Component primitives** in `client/src/components/ui/`: `Button` (primary, secondary, ghost, danger; 36px height), `TextField`, `Select`, `Avatar` (initials on a hashed muted colour from a fixed 6-colour set), `Badge`, `Toast`, `Dialog`, `Drawer`, `Spinner`, `Kbd`. Each is a small file with its own CSS module. No third-party UI kit.
-- [ ] **8.4 Icons** `client/src/components/icons/`: hand-drawn inline SVGs, 16px, 1.5px stroke, `currentColor` — arrow-left, arrow-right, undo, redo, plus, close, clock, check, user, building, branch, alert, wifi-off.
-- [ ] **8.5 App shell** `client/src/App.tsx`: top bar (left: the title **Real-Time Collaborative Kanban Board** in 16px 600 weight, then Organization selector and Branch switcher; right: connection status, presence stack, Undo, Redo, Activity, user menu). Routes: `/login`, `/` (workspace), `/b/:boardId`.
-- [ ] **8.6 API client** `client/src/api/http.ts`
+- [x] **8.2 Base styles** `client/src/styles/base.css`: import fonts (`@fontsource/source-sans-3/400.css`, `600.css`, `@fontsource/jetbrains-mono/400.css`), reset, `body { background: var(--bg); color: var(--ink); font: 400 var(--fs-sm)/1.5 var(--font-ui); }`, `:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }`, `@media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }`.
+- [x] **8.3 Component primitives** in `client/src/components/ui/`: `Button` (primary, secondary, ghost, danger; 36px height), `TextField`, `Select`, `Avatar` (initials on a hashed muted colour from a fixed 6-colour set), `Badge`, `Toast`, `Dialog`, `Drawer`, `Spinner`, `Kbd`. Each is a small file with its own CSS module. No third-party UI kit.
+- [x] **8.4 Icons** `client/src/components/icons/`: hand-drawn inline SVGs, 16px, 1.5px stroke, `currentColor` — arrow-left, arrow-right, undo, redo, plus, close, clock, check, user, building, branch, alert, wifi-off.
+- [x] **8.5 App shell** `client/src/App.tsx`: top bar (left: the title **Real-Time Collaborative Kanban Board** in 16px 600 weight, then Organization selector and Branch switcher; right: connection status, presence stack, Undo, Redo, Activity, user menu). Routes: `/login`, `/` (workspace), `/b/:boardId`.
+- [x] **8.6 API client** `client/src/api/http.ts`
 
 ```ts
 let accessToken: string | null = null;
@@ -1499,13 +1499,13 @@ Vite dev proxy in `vite.config.ts`: `/api` and `/socket.io` → `http://localhos
 
 ### Steps
 
-- [ ] **9.1 Session store** `client/src/store/session.ts` (Zustand): `user`, `workspaces`, `activeOrgId`, `activeTenantId`, `status`. The token lives only in memory (`setToken`). On app start call `/auth/refresh` to restore the session, then `/me/workspaces`.
-- [ ] **9.2 Login page**: two fields (Email, Password), one button labelled **Sign in**, inline error text under the form ("Email or password is incorrect."). Left-aligned single column card, 360px wide, no illustration. Title is the product title.
-- [ ] **9.3 Organization selector**: a button showing the active organization name; opens a listbox of organizations from `/me/workspaces`. Hidden label if the user has only one organization (rendered as plain text).
-- [ ] **9.4 Branch switcher**: lists only branches the user is authorized for, with their role shown in small text ("Member", "Tenant Admin", "Org Admin"). Remember the last choice per user in `localStorage` as ids only (no data).
-- [ ] **9.5 Switch behaviour**: selecting another branch (a) unsubscribes from the current board room, (b) clears the board store, undo/redo history and the offline queue for the previous branch, (c) loads boards for the new branch, (d) subscribes to its first board. A stale response from the previous branch must be ignored (use an incrementing `requestEpoch`).
-- [ ] **9.6 Board list**: a left column or dropdown listing boards in the active branch; "New board" button visible only if `can(role,'board.create')` (client mirror of the permission table for UI hints; the server remains authoritative).
-- [ ] **9.7 Empty states** with plain text: "No boards in this branch yet." and for admins a "Create board" button; for members, "Ask a Tenant Admin to create a board."
+- [x] **9.1 Session store** `client/src/store/session.ts` (Zustand): `user`, `workspaces`, `activeOrgId`, `activeTenantId`, `status`. The token lives only in memory (`setToken`). On app start call `/auth/refresh` to restore the session, then `/me/workspaces`.
+- [x] **9.2 Login page**: two fields (Email, Password), one button labelled **Sign in**, inline error text under the form ("Email or password is incorrect."). Left-aligned single column card, 360px wide, no illustration. Title is the product title.
+- [x] **9.3 Organization selector**: a button showing the active organization name; opens a listbox of organizations from `/me/workspaces`. Hidden label if the user has only one organization (rendered as plain text).
+- [x] **9.4 Branch switcher**: lists only branches the user is authorized for, with their role shown in small text ("Member", "Tenant Admin", "Org Admin"). Remember the last choice per user in `localStorage` as ids only (no data).
+- [x] **9.5 Switch behaviour**: selecting another branch (a) unsubscribes from the current board room, (b) clears the board store, undo/redo history and the offline queue for the previous branch, (c) loads boards for the new branch, (d) subscribes to its first board. A stale response from the previous branch must be ignored (use an incrementing `requestEpoch`).
+- [x] **9.6 Board list**: a left column or dropdown listing boards in the active branch; "New board" button visible only if `can(role,'board.create')` (client mirror of the permission table for UI hints; the server remains authoritative).
+- [x] **9.7 Empty states** with plain text: "No boards in this branch yet." and for admins a "Create board" button; for members, "Ask a Tenant Admin to create a board."
 
 ### Tests
 
@@ -1528,7 +1528,7 @@ Login → selector → switcher works against the seeded data; tests green.
 
 ### Steps
 
-- [ ] **10.1 Board store** `client/src/store/board.ts`
+- [x] **10.1 Board store** `client/src/store/board.ts`
 
 ```ts
 interface TaskDto {
@@ -1559,12 +1559,12 @@ interface BoardState {
 
 `applyServerTask` is the single entry point for server truth (from REST responses, socket events and conflict payloads). It rejects any task whose `version` is not greater than the local version, so late events never regress state.
 
-- [ ] **10.2 Layout**: three columns side by side (CSS grid, `grid-template-columns: repeat(3, minmax(280px, 1fr))`), horizontal scroll on narrow screens. Column header: coloured band using `--todo/--progress/--done`, column name from the server (`To Do`, `In Progress`, `Completed`), and the task count.
-- [ ] **10.3 Card**: title (14px 600), assignee avatar, priority marker (small coloured bar on the left edge, not an emoji), `Pending` text marker while unconfirmed. Whole card is a button that opens the Task Detail panel. 1px border, 6px radius, shadow only while dragging.
-- [ ] **10.4 DnD with `@dnd-kit`**: `DndContext` with `PointerSensor` (activation distance 6px), `TouchSensor` (delay 150ms), `KeyboardSensor` with `sortableKeyboardCoordinates`; `SortableContext` per column using `verticalListSortingStrategy`; `DragOverlay` for the lifted card; column bodies are droppable so empty columns accept drops. Collision detection `closestCorners`.
-- [ ] **10.5 On drop** compute `(toColumnId, afterTaskId)` from the final order and call `moveTask` (Phase 12 wires optimistic update + REST). Members can drag only tasks assigned to them; other cards are non-draggable with a `title` tooltip "Only the assignee can move this task".
-- [ ] **10.6 Create task**: "Add task" button at the bottom of To Do (admins only) opening an inline title field; Enter creates, Escape cancels.
-- [ ] **10.7 Accessibility**: announce moves through an `aria-live="polite"` region ("Build Login Page moved to In Progress, position 1 of 2").
+- [x] **10.2 Layout**: three columns side by side (CSS grid, `grid-template-columns: repeat(3, minmax(280px, 1fr))`), horizontal scroll on narrow screens. Column header: coloured band using `--todo/--progress/--done`, column name from the server (`To Do`, `In Progress`, `Completed`), and the task count.
+- [x] **10.3 Card**: title (14px 600), assignee avatar, priority marker (small coloured bar on the left edge, not an emoji), `Pending` text marker while unconfirmed. Whole card is a button that opens the Task Detail panel. 1px border, 6px radius, shadow only while dragging.
+- [x] **10.4 DnD with `@dnd-kit`**: `DndContext` with `PointerSensor` (activation distance 6px), `TouchSensor` (delay 150ms), `KeyboardSensor` with `sortableKeyboardCoordinates`; `SortableContext` per column using `verticalListSortingStrategy`; `DragOverlay` for the lifted card; column bodies are droppable so empty columns accept drops. Collision detection `closestCorners`.
+- [x] **10.5 On drop** compute `(toColumnId, afterTaskId)` from the final order and call `moveTask` (Phase 12 wires optimistic update + REST). Members can drag only tasks assigned to them; other cards are non-draggable with a `title` tooltip "Only the assignee can move this task".
+- [x] **10.6 Create task**: "Add task" button at the bottom of To Do (admins only) opening an inline title field; Enter creates, Escape cancels.
+- [x] **10.7 Accessibility**: announce moves through an `aria-live="polite"` region ("Build Login Page moved to In Progress, position 1 of 2").
 
 ### Tests
 
@@ -1587,13 +1587,13 @@ Board interacts correctly against the real backend (still without optimistic log
 
 ### Steps
 
-- [ ] **11.1** `Drawer` opens from the right (width 440px, full width under 640px). Opens on card click, on Enter when the card is focused, and from a context menu (right-click or the three-dot button on the card) with items **Open details**, **Move to…** (submenu of the other two columns), **Delete** (admins).
-- [ ] **11.2** Fields: Title, Description (plain textarea with auto-height), Assigned member (select of branch members), Current status (select of the three columns; changing it uses the move API and appends to the bottom of the target column), Priority (Low, Medium, High), plus read-only meta: version (mono font), created, last updated, created by.
-- [ ] **11.3** Editing: a **Save** button and **Discard** button appear when the form is dirty. Save sends `PATCH` with `expectedVersion` (the version loaded when the panel opened or last server-applied) and a new `actionId`. Fields the role cannot edit are rendered as read-only text, not disabled inputs.
-- [ ] **11.4** If a newer version arrives from the server while the panel is open and the form is **not dirty**, update the fields silently. If the form **is dirty**, keep the user's edits, show an inline notice "This task was updated by {name}. Review the changes before saving." with a **Show latest** button; Save then sends the new `expectedVersion` only after the user confirms.
-- [ ] **11.5** If the task is deleted while open, show "This task was deleted." and close the panel on dismiss.
-- [ ] **11.6** Delete requires a confirm dialog with the task title in the text.
-- [ ] **11.7** Panel traps focus, closes on Escape, restores focus to the originating card.
+- [x] **11.1** `Drawer` opens from the right (width 440px, full width under 640px). Opens on card click, on Enter when the card is focused, and from a context menu (right-click or the three-dot button on the card) with items **Open details**, **Move to…** (submenu of the other two columns), **Delete** (admins).
+- [x] **11.2** Fields: Title, Description (plain textarea with auto-height), Assigned member (select of branch members), Current status (select of the three columns; changing it uses the move API and appends to the bottom of the target column), Priority (Low, Medium, High), plus read-only meta: version (mono font), created, last updated, created by.
+- [x] **11.3** Editing: a **Save** button and **Discard** button appear when the form is dirty. Save sends `PATCH` with `expectedVersion` (the version loaded when the panel opened or last server-applied) and a new `actionId`. Fields the role cannot edit are rendered as read-only text, not disabled inputs.
+- [x] **11.4** If a newer version arrives from the server while the panel is open and the form is **not dirty**, update the fields silently. If the form **is dirty**, keep the user's edits, show an inline notice "This task was updated by {name}. Review the changes before saving." with a **Show latest** button; Save then sends the new `expectedVersion` only after the user confirms.
+- [x] **11.5** If the task is deleted while open, show "This task was deleted." and close the panel on dismiss.
+- [x] **11.6** Delete requires a confirm dialog with the task title in the text.
+- [x] **11.7** Panel traps focus, closes on Escape, restores focus to the originating card.
 
 ### Tests
 
