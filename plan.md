@@ -602,7 +602,7 @@ Migrations apply on an empty DB; `npm run test -w server` green for all db tests
 
 ### Steps
 
-- [ ] **2.1 Env validation** `server/src/config/env.ts`
+- [x] **2.1 Env validation** `server/src/config/env.ts`
 
 ```ts
 import "dotenv/config";
@@ -628,7 +628,7 @@ const schema = z.object({
 export const env = schema.parse(process.env);
 ```
 
-- [ ] **2.2 Errors** `server/src/lib/errors.ts`
+- [x] **2.2 Errors** `server/src/lib/errors.ts`
 
 ```ts
 export class AppError extends Error {
@@ -659,9 +659,9 @@ export class VersionConflict extends AppError {
 
 `server/src/middleware/error.ts` maps `AppError` → envelope, `ZodError` → 400 with field details, anything else → 500 `INTERNAL` (logged with request id, message hidden from client).
 
-- [ ] **2.3 App factory** `server/src/app.ts` — `helmet()`, `cors({ origin: env.CLIENT_ORIGIN, credentials: true })`, `express.json({ limit: "100kb" })`, `cookieParser()`, `pino-http` with `genReqId`, `GET /healthz` (process up) and `GET /readyz` (does `SELECT 1`), router mounted at `/api/v1`, 404 handler, error handler. Export `createApp()` (used by tests) separately from `index.ts` (which listens and attaches Socket.IO).
+- [x] **2.3 App factory** `server/src/app.ts` — `helmet()`, `cors({ origin: env.CLIENT_ORIGIN, credentials: true })`, `express.json({ limit: "100kb" })`, `cookieParser()`, `pino-http` with `genReqId`, `GET /healthz` (process up) and `GET /readyz` (does `SELECT 1`), router mounted at `/api/v1`, 404 handler, error handler. Export `createApp()` (used by tests) separately from `index.ts` (which listens and attaches Socket.IO).
 
-- [ ] **2.3b Zod validate helper** `server/src/middleware/validate.ts`
+- [x] **2.3b Zod validate helper** `server/src/middleware/validate.ts`
 
 ```ts
 import { ZodSchema } from "zod";
@@ -684,7 +684,7 @@ export const validate =
   };
 ```
 
-- [ ] **2.4 Auth module** `server/src/modules/auth/`
+- [x] **2.4 Auth module** `server/src/modules/auth/`
   - `POST /auth/register` `{ email, name, password }` (min 10 chars). Creates a user only; access comes from memberships added by admins. Rate limited 10/min/IP.
   - `POST /auth/login` → `{ data: { accessToken, user } }` and sets `refresh` cookie (`httpOnly; secure in prod; sameSite=lax; path=/api/v1/auth`). Same error message for unknown email and wrong password. Rate limited.
   - `POST /auth/refresh` → rotates the refresh token (old one revoked), returns a new access token. Reuse of a revoked token revokes all of that user's tokens.
