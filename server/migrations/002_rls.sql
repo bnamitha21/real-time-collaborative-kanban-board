@@ -34,3 +34,4 @@ CREATE POLICY tenant_isolation ON activity_logs     USING (tenant_id = nullif(cu
 DROP POLICY IF EXISTS tenant_isolation ON processed_actions;
 CREATE POLICY tenant_isolation ON processed_actions USING (tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid)
                                                     WITH CHECK (tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid);
+

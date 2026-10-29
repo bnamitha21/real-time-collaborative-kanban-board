@@ -8,3 +8,4 @@ $$ SELECT t.tenant_id, t.board_id FROM tasks t WHERE t.id = p_id $$;
 
 REVOKE ALL ON FUNCTION board_scope(uuid), task_scope(uuid) FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION board_scope(uuid), task_scope(uuid) TO kanban_app;
+

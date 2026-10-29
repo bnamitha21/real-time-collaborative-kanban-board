@@ -137,3 +137,4 @@ CREATE OR REPLACE TRIGGER organizations_touch BEFORE UPDATE ON organizations FOR
 CREATE OR REPLACE TRIGGER tenants_touch       BEFORE UPDATE ON tenants       FOR EACH ROW EXECUTE FUNCTION touch_updated_at();
 CREATE OR REPLACE TRIGGER boards_touch        BEFORE UPDATE ON boards        FOR EACH ROW EXECUTE FUNCTION touch_updated_at();
 CREATE OR REPLACE TRIGGER tasks_touch         BEFORE UPDATE ON tasks         FOR EACH ROW EXECUTE FUNCTION touch_updated_at();
+
