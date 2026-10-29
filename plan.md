@@ -33,7 +33,7 @@ Phases 0. Repository and tooling
 
 ### Steps
 
-- [ ] **0.1 Create the repo**
+- [x] **0.1 Create the repo**
 
 ```bash
 mkdir kanban-board && cd kanban-board
@@ -44,7 +44,7 @@ mkdir -p server/src/{config,db,middleware,modules,realtime,lib} server/migration
          e2e docs scripts
 ```
 
-- [ ] **0.2 Root `package.json`** (replace generated content)
+- [x] **0.2 Root `package.json`** (replace generated content)
 
 ```json
 {
@@ -74,7 +74,7 @@ mkdir -p server/src/{config,db,middleware,modules,realtime,lib} server/migration
 }
 ```
 
-- [ ] **0.3 Root `.gitignore`** (this is where test code is excluded)
+- [x] **0.3 Root `.gitignore`** (this is where test code is excluded)
 
 ```gitignore
 # dependencies and builds
@@ -113,7 +113,7 @@ playwright-report/
 *.spec.tsx
 ```
 
-- [ ] **0.4 Server workspace**
+- [x] **0.4 Server workspace**
 
 ```bash
 cd server
@@ -170,7 +170,7 @@ cd ..
 }
 ```
 
-- [ ] **0.5 Client workspace**
+- [x] **0.5 Client workspace**
 
 ```bash
 npm create vite@latest client -- --template react-ts
@@ -181,7 +181,7 @@ npm i -D vitest @testing-library/react @testing-library/jest-dom @testing-librar
 cd ..
 ```
 
-- [ ] **0.6 Local infrastructure `docker-compose.dev.yml`**
+- [x] **0.6 Local infrastructure `docker-compose.dev.yml`**
 
 ```yaml
 services:
@@ -207,7 +207,7 @@ services:
 volumes: { pgdata: {} }
 ```
 
-- [ ] **0.7 `.env.example`**
+- [x] **0.7 `.env.example`**
 
 ```dotenv
 NODE_ENV=development
@@ -223,7 +223,7 @@ REDIS_URL=
 LOG_LEVEL=info
 ```
 
-- [ ] **0.8 ESLint + Prettier** (`.eslintrc.cjs`, `.prettierrc`)
+- [x] **0.8 ESLint + Prettier** (`.eslintrc.cjs`, `.prettierrc`)
 
 ```js
 // .eslintrc.cjs
@@ -249,7 +249,7 @@ module.exports = {
 }
 ```
 
-- [ ] **0.9 First commit**
+- [x] **0.9 First commit**
 
 ```bash
 git add -A && git commit -m "chore: scaffold monorepo"
@@ -296,7 +296,7 @@ export default defineConfig({
 
 ### Steps
 
-- [ ] **1.1 Migration runner** `server/src/db/migrate.ts`
+- [x] **1.1 Migration runner** `server/src/db/migrate.ts`
 
 ```ts
 import "dotenv/config";
@@ -343,7 +343,7 @@ main().catch((e) => {
 });
 ```
 
-- [ ] **1.2 Migration `server/migrations/001_init.sql`**
+- [x] **1.2 Migration `server/migrations/001_init.sql`**
 
 ```sql
 CREATE EXTENSION IF NOT EXISTS pgcrypto;
@@ -487,7 +487,7 @@ CREATE TRIGGER boards_touch        BEFORE UPDATE ON boards        FOR EACH ROW E
 CREATE TRIGGER tasks_touch         BEFORE UPDATE ON tasks         FOR EACH ROW EXECUTE FUNCTION touch_updated_at();
 ```
 
-- [ ] **1.3 Migration `002_rls.sql`** — second isolation layer
+- [x] **1.3 Migration `002_rls.sql`** — second isolation layer
 
 ```sql
 DO $$ BEGIN
@@ -521,7 +521,7 @@ CREATE POLICY tenant_isolation ON processed_actions USING (tenant_id = nullif(cu
 
 The `kanban_app` role does not own the tables, so RLS applies to it. With no tenant set, `nullif(...)::uuid` is `NULL`, so no rows match: queries fail closed.
 
-- [ ] **1.4 DB helper** `server/src/db/pool.ts`
+- [x] **1.4 DB helper** `server/src/db/pool.ts`
 
 ```ts
 import { Pool, PoolClient } from "pg";
@@ -556,7 +556,7 @@ export function withTenant<T>(
 }
 ```
 
-- [ ] **1.5 Seed** `server/src/db/seed.ts` (uses the owner connection; development only; refuses to run when `NODE_ENV=production`)
+- [x] **1.5 Seed** `server/src/db/seed.ts` (uses the owner connection; development only; refuses to run when `NODE_ENV=production`)
 
 Create:
 
