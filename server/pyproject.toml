@@ -7,6 +7,12 @@ python_version = "3.12"
 strict = true
 ignore_missing_imports = true
 
+[[tool.mypy.overrides]]
+module = ["fractional_indexing", "fractional_indexing.*"]
+ignore_missing_imports = true
+follow_imports = "silent"
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 python_files = ["test_*.py", "*_test.py"]
+pythonpath = [".."]
