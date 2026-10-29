@@ -9,12 +9,14 @@ from server.src.config.env import env
 from server.src.db.pool import DATABASE_URL
 from server.src.lib.errors import AppError
 from server.src.modules.access.routes import workspaces_bp
+from server.src.modules.activity.routes import activity_bp
 from server.src.modules.auth.routes import auth_bp
 from server.src.modules.boards.routes import boards_bp
 from server.src.modules.columns.routes import columns_bp
 from server.src.modules.organizations.routes import organizations_bp
 from server.src.modules.tasks.routes import tasks_bp
 from server.src.modules.tenants.routes import tenants_bp
+from server.src.realtime.socket import init_realtime
 
 # Configure structured logging
 logging.basicConfig(
@@ -26,6 +28,7 @@ logger = logging.getLogger("kanban_server")
 
 def create_app() -> Flask:
     app = Flask(__name__)
+    app.config["SECRET_KEY"] = env.JWT_ACCESS_SECRET
     app.config["MAX_CONTENT_LENGTH"] = 100 * 1024  # 100 kB body limit
 
     # CORS configuration
@@ -75,6 +78,7 @@ def create_app() -> Flask:
     app.register_blueprint(boards_bp)
     app.register_blueprint(columns_bp)
     app.register_blueprint(tasks_bp)
+    app.register_blueprint(activity_bp)
 
     # Error handlers
     @app.errorhandler(AppError)
@@ -103,4 +107,5 @@ def create_app() -> Flask:
             {"error": {"code": "INTERNAL", "message": "An internal error occurred."}}
         ), 500
 
+    init_realtime(app)
     return app

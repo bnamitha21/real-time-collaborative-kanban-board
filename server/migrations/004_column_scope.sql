@@ -4,3 +4,4 @@ $$ SELECT c.tenant_id, c.board_id FROM columns c WHERE c.id = p_id $$;
 
 REVOKE ALL ON FUNCTION column_scope(uuid) FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION column_scope(uuid) TO kanban_app;
+

@@ -999,7 +999,7 @@ Stale → `409 VERSION_CONFLICT` with `error.details.current` containing the lat
 
 ### Steps
 
-- [ ] **5.1 Service** `server/src/modules/tasks/move.ts`
+- [x] **5.1 Service** `server/src/modules/tasks/move.ts`
 
 ```ts
 import { generateKeyBetween } from "fractional-indexing";
@@ -1111,9 +1111,9 @@ export async function moveTask(ctx: Ctx, taskId: string, input: MoveInput) {
 
 The route handler broadcasts **after** `withTenant` resolves (commit complete) and only if `replayed === false`.
 
-- [ ] **5.2** Apply the same pattern (lock → permission → version check → write → log → idempotency) to `PATCH /tasks/:id` and `DELETE /tasks/:id`. `task.assign` is checked separately when `assigneeId` is in the body.
-- [ ] **5.3 Rebalancing safeguard**: fractional keys grow when users repeatedly insert at the same spot. Add a nightly-safe maintenance function `rebalanceColumn(tenantId, columnId)` that rewrites keys with `generateNKeysBetween(null, null, n)` inside one transaction while locking the column's tasks `FOR UPDATE` and bumping each task's version. Trigger it from the move service when `position.length > 64`. Broadcast `board:resync` afterwards so clients refetch.
-- [ ] **5.4 Deadlock avoidance**: always lock rows in a deterministic order (task id ascending) when an operation touches more than one task (rebalance only).
+- [x] **5.2** Apply the same pattern (lock → permission → version check → write → log → idempotency) to `PATCH /tasks/:id` and `DELETE /tasks/:id`. `task.assign` is checked separately when `assigneeId` is in the body.
+- [x] **5.3 Rebalancing safeguard**: fractional keys grow when users repeatedly insert at the same spot. Add a nightly-safe maintenance function `rebalanceColumn(tenantId, columnId)` that rewrites keys with `generateNKeysBetween(null, null, n)` inside one transaction while locking the column's tasks `FOR UPDATE` and bumping each task's version. Trigger it from the move service when `position.length > 64`. Broadcast `board:resync` afterwards so clients refetch.
+- [x] **5.4 Deadlock avoidance**: always lock rows in a deterministic order (task id ascending) when an operation touches more than one task (rebalance only).
 
 ### Tests (`server/tests/concurrency/`)
 
@@ -1140,7 +1140,7 @@ Concurrency suite green and stable across 20 consecutive runs (`for i in $(seq 2
 
 ### Steps
 
-- [ ] **6.1 `logActivity`** `server/src/modules/activity/log.ts`
+- [x] **6.1 `logActivity`** `server/src/modules/activity/log.ts`
 
 ```ts
 export async function logActivity(
@@ -1173,9 +1173,9 @@ export async function logActivity(
 }
 ```
 
-- [ ] **6.2** Call it from create, update (`task.updated`, plus `task.assigned` when assignee changes), delete, move, reorder, and board create/update/delete.
-- [ ] **6.3** `GET /tenants/:tenantId/activity?boardId&taskId&cursor&limit` returns entries newest first with actor name, task title at time of action (stored inside `after_value`/`before_value` as `title`), and a human sentence built on the client from structured data.
-- [ ] **6.4** Cleanup job for `processed_actions` older than 7 days (`setInterval` in `index.ts`, once per hour, run as `DELETE ... WHERE created_at < now() - interval '7 days'` inside a short transaction with an advisory lock so only one instance runs it).
+- [x] **6.2** Call it from create, update (`task.updated`, plus `task.assigned` when assignee changes), delete, move, reorder, and board create/update/delete.
+- [x] **6.3** `GET /tenants/:tenantId/activity?boardId&taskId&cursor&limit` returns entries newest first with actor name, task title at time of action (stored inside `after_value`/`before_value` as `title`), and a human sentence built on the client from structured data.
+- [x] **6.4** Cleanup job for `processed_actions` older than 7 days (`setInterval` in `index.ts`, once per hour, run as `DELETE ... WHERE created_at < now() - interval '7 days'` inside a short transaction with an advisory lock so only one instance runs it).
 
 ### Tests (`server/tests/activity/`)
 
@@ -1227,7 +1227,7 @@ Writes still go through REST (so there is one validated, audited path); sockets 
 
 ### Steps
 
-- [ ] **7.1 Attach Socket.IO** `server/src/realtime/index.ts`
+- [x] **7.1 Attach Socket.IO** `server/src/realtime/index.ts`
 
 ```ts
 import { Server } from "socket.io";
@@ -1289,14 +1289,14 @@ export function attachRealtime(httpServer: import("http").Server) {
 }
 ```
 
-- [ ] **7.2 Publisher** `server/src/realtime/publisher.ts`: `publishToBoard(tenantId, boardId, event, payload)` emits to `tenant:{tenantId}:board:{boardId}`. The function signature requires both ids so a caller cannot broadcast without a tenant. Called only from route handlers after commit.
-- [ ] **7.3 Presence** `server/src/realtime/presence.ts`
+- [x] **7.2 Publisher** `server/src/realtime/publisher.ts`: `publishToBoard(tenantId, boardId, event, payload)` emits to `tenant:{tenantId}:board:{boardId}`. The function signature requires both ids so a caller cannot broadcast without a tenant. Called only from route handlers after commit.
+- [x] **7.3 Presence** `server/src/realtime/presence.ts`
   - In-memory: `Map<tenantId, Map<userId, Set<socketId>>>`. A user is online while the set is non-empty, so multiple tabs work and one closed tab does not mark them offline.
   - On join/leave, emit `presence:update` to `tenant:{tenantId}` with the full online list. Offline users appear as `online:false` using the tenant's member list from the database.
   - Network loss: Socket.IO ping timeout fires `disconnect`, presence updates within ~18 seconds.
   - Scale-out: when `REDIS_URL` is set, use `@socket.io/redis-adapter` (`npm i @socket.io/redis-adapter redis -w server`) and store presence as a Redis hash per tenant with per-socket keys that expire (TTL 30 s, refreshed on every ping). Interface stays the same.
-- [ ] **7.4 Revocation**: when a membership is removed or changed, emit `access:revoked` to `user:{id}` and call `io.in("user:{id}").fetchSockets()` then re-run `resolveTenantAccess`; sockets that lost access leave the tenant rooms and receive `access:revoked`.
-- [ ] **7.5** Hook `publishToBoard` calls into create, update, move, reorder, delete handlers. Payload is built from the committed row, never from request input.
+- [x] **7.4 Revocation**: when a membership is removed or changed, emit `access:revoked` to `user:{id}` and call `io.in("user:{id}").fetchSockets()` then re-run `resolveTenantAccess`; sockets that lost access leave the tenant rooms and receive `access:revoked`.
+- [x] **7.5** Hook `publishToBoard` calls into create, update, move, reorder, delete handlers. Payload is built from the committed row, never from request input.
 
 ### Tests (`server/tests/realtime/`) using `socket.io-client` against a real listening server
 

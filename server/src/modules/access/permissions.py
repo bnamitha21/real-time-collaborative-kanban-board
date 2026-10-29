@@ -35,6 +35,4 @@ def can(
     if role in allowed:
         return True
     is_assignee = bool(ctx and (ctx.get("is_assignee") or ctx.get("isAssignee")))
-    return bool(
-        role == "member" and "member:own" in allowed and is_assignee
-    )
+    return bool(role == "member" and "member:own" in allowed and is_assignee)

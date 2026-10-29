@@ -13,6 +13,8 @@ from server.src.modules.tenants.service import (
     remove_tenant_member,
     update_tenant,
 )
+from server.src.realtime.presence import get_presence_list
+from server.src.realtime.publisher import publish_to_tenant, publish_to_user
 
 tenants_bp = Blueprint("tenants", __name__, url_prefix="/api/v1/tenants")
 
@@ -92,4 +94,9 @@ def handle_remove_member(tenant_id: str, user_id: str):
             raise forbidden("Tenant admins cannot remove other administrators")
 
     remove_tenant_member(tenant_id, user_id)
+    publish_to_user(user_id, "access:revoked", {"tenantId": tenant_id})
+    presence_users = get_presence_list(tenant_id)
+    publish_to_tenant(
+        tenant_id, "presence:update", {"tenantId": tenant_id, "users": presence_users}
+    )
     return jsonify({"data": {"success": True}}), 200

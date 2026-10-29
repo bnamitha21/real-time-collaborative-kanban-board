@@ -1,7 +1,10 @@
 import json
 from typing import Any
 
-from fractional_indexing import generate_key_between  # type: ignore[import-untyped]
+from fractional_indexing import (  # type: ignore[import-untyped]
+    generate_key_between,
+    generate_n_keys_between,
+)
 from psycopg import Connection
 from server.src.db.pool import with_tenant
 from server.src.lib.errors import VersionConflict, bad_request, forbidden, not_found
@@ -402,3 +405,213 @@ def delete_task(
             return False
 
     return with_tenant(tenant_id, _delete)
+
+
+def rebalance_column(conn: Connection, tenant_id: str, column_id: str) -> None:
+    with conn.cursor() as cur:
+        # Fetch current order of tasks in the column
+        cur.execute(
+            """
+            SELECT id FROM tasks
+            WHERE column_id = %s AND tenant_id = %s
+            ORDER BY position COLLATE "C" ASC, id ASC;
+            """,
+            (column_id, tenant_id),
+        )
+        ordered_ids = [str(r[0]) for r in cur.fetchall()]
+        if not ordered_ids:
+            return
+
+        # Lock rows in deterministic order: id ascending (step 5.4 deadlock avoidance)
+        cur.execute(
+            """
+            SELECT id FROM tasks
+            WHERE column_id = %s AND tenant_id = %s
+            ORDER BY id ASC
+            FOR UPDATE;
+            """,
+            (column_id, tenant_id),
+        )
+
+        # Generate balanced keys
+        new_keys = generate_n_keys_between(None, None, len(ordered_ids))
+        for task_id, new_key in zip(ordered_ids, new_keys, strict=True):
+            cur.execute(
+                """
+                UPDATE tasks
+                SET position = %s, version = version + 1
+                WHERE id = %s AND tenant_id = %s;
+                """,
+                (new_key, task_id, tenant_id),
+            )
+
+
+def move_task(
+    org_id: str,
+    tenant_id: str,
+    user_id: str,
+    caller_role: str,
+    task_id: str,
+    expected_version: int,
+    to_column_id: str,
+    after_task_id: str | None = None,
+    action_id: str | None = None,
+) -> tuple[dict[str, Any], bool, str, bool, str]:
+    """Move or reorder a task.
+
+    Returns: (updated_task, replayed, event_type, rebalanced, from_column_id)
+    """
+
+    def _move(conn: Connection) -> tuple[dict[str, Any], bool, str, bool, str]:
+        with conn.cursor() as cur:
+            # 1. Idempotency: a retried action returns the first result
+            if action_id:
+                cur.execute(
+                    "SELECT result FROM processed_actions WHERE action_id = %s AND tenant_id = %s;",
+                    (action_id, tenant_id),
+                )
+                seen = cur.fetchone()
+                if seen:
+                    cached_result = seen[0] if isinstance(seen[0], dict) else json.loads(seen[0])
+                    return cached_result, True, "replayed", False, ""
+
+            # 2. Take the row lock; concurrent movers queue here
+            cur.execute(
+                """
+                SELECT id, tenant_id, board_id, column_id, title,
+                       description, assignee_id, priority, position,
+                       version, created_by, created_at, updated_at
+                FROM tasks
+                WHERE id = %s AND tenant_id = %s
+                FOR UPDATE;
+                """,
+                (task_id, tenant_id),
+            )
+            row = cur.fetchone()
+            if not row:
+                raise not_found("Task not found")
+            current_task = row_to_task_dto(row)
+
+            # 3. Permission (member only for own tasks)
+            is_assignee = current_task["assigneeId"] == user_id
+            if not can(caller_role, "task.move", {"is_assignee": is_assignee}):  # type: ignore[arg-type]
+                raise forbidden("You do not have permission to move this task")
+
+            # 4. Optimistic concurrency check
+            if current_task["version"] != expected_version:
+                raise VersionConflict(current=current_task)
+
+            # 5. Destination column must belong to the same board
+            cur.execute(
+                "SELECT id, key FROM columns WHERE id = %s AND board_id = %s AND tenant_id = %s;",
+                (to_column_id, current_task["boardId"], tenant_id),
+            )
+            if not cur.fetchone():
+                raise bad_request("Destination column is not on this board")
+
+            # 6. Neighbours computed server-side from current data
+            prev_pos: str | None = None
+            if after_task_id:
+                cur.execute(
+                    """
+                    SELECT position FROM tasks
+                    WHERE id = %s AND column_id = %s AND tenant_id = %s AND id <> %s;
+                    """,
+                    (after_task_id, to_column_id, tenant_id, task_id),
+                )
+                a_row = cur.fetchone()
+                if not a_row:
+                    raise bad_request("afterTaskId is not in the destination column")
+                prev_pos = a_row[0]
+
+            cur.execute(
+                """
+                SELECT position FROM tasks
+                WHERE column_id = %s AND tenant_id = %s AND id <> %s
+                  AND (%s::text IS NULL OR position COLLATE "C" > %s::text COLLATE "C")
+                ORDER BY position COLLATE "C" ASC, id ASC
+                LIMIT 1;
+                """,
+                (to_column_id, tenant_id, task_id, prev_pos, prev_pos),
+            )
+            next_row = cur.fetchone()
+            next_pos: str | None = next_row[0] if next_row else None
+
+            position = generate_key_between(prev_pos, next_pos)
+
+            # 7. Write + Version bump
+            cur.execute(
+                """
+                UPDATE tasks
+                SET column_id = %s, position = %s, version = version + 1
+                WHERE id = %s AND tenant_id = %s AND version = %s
+                RETURNING id, tenant_id, board_id, column_id, title,
+                          description, assignee_id, priority, position,
+                          version, created_by, created_at, updated_at;
+                """,
+                (to_column_id, position, task_id, tenant_id, expected_version),
+            )
+            up_row = cur.fetchone()
+            if not up_row:
+                raise VersionConflict(current=current_task)
+            updated_task = row_to_task_dto(up_row)
+
+            # 8. Audit + Idempotency record, same transaction
+            same_column = current_task["columnId"] == to_column_id
+            action = "task.reordered" if same_column else "task.moved"
+            event_type = "task:reordered" if same_column else "task:moved"
+            from_column_id = current_task["columnId"]
+
+            log_activity(
+                conn,
+                organization_id=org_id,
+                tenant_id=tenant_id,
+                actor_id=user_id,
+                action=action,
+                board_id=current_task["boardId"],
+                task_id=task_id,
+                before={
+                    "title": current_task["title"],
+                    "columnId": current_task["columnId"],
+                    "position": current_task["position"],
+                    "version": current_task["version"],
+                },
+                after={
+                    "title": updated_task["title"],
+                    "columnId": to_column_id,
+                    "position": position,
+                    "version": updated_task["version"],
+                },
+            )
+
+            if action_id:
+                cur.execute(
+                    """
+                    INSERT INTO processed_actions (action_id, tenant_id, user_id, result)
+                    VALUES (%s, %s, %s, %s);
+                    """,
+                    (action_id, tenant_id, user_id, json.dumps(updated_task)),
+                )
+
+            # 9. Rebalancing safeguard (step 5.3): fractional key length > 64
+            rebalanced = False
+            if len(position) > 64:
+                rebalance_column(conn, tenant_id, to_column_id)
+                rebalanced = True
+                cur.execute(
+                    """
+                    SELECT id, tenant_id, board_id, column_id, title,
+                           description, assignee_id, priority, position,
+                           version, created_by, created_at, updated_at
+                    FROM tasks
+                    WHERE id = %s AND tenant_id = %s;
+                    """,
+                    (task_id, tenant_id),
+                )
+                refreshed = cur.fetchone()
+                if refreshed:
+                    updated_task = row_to_task_dto(refreshed)
+
+            return updated_task, False, event_type, rebalanced, from_column_id
+
+    return with_tenant(tenant_id, _move)

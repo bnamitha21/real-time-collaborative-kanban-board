@@ -23,6 +23,14 @@ class UpdateTaskSchema(BaseModel):
     priority: Literal["low", "medium", "high"] | None = None
 
 
+class MoveTaskSchema(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    expectedVersion: int
+    toColumnId: str
+    afterTaskId: str | None = None
+    actionId: str
+
+
 class DeleteTaskQuerySchema(BaseModel):
     model_config = ConfigDict(extra="forbid")
     expectedVersion: int

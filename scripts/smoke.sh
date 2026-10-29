@@ -34,3 +34,4 @@ BOARDS=$(curl -s -f -X GET "${API_BASE}/tenants/${TENANT_ID}/boards" \
 echo "Boards:"
 echo "${BOARDS}"
 echo "Smoke test complete."
+

@@ -14,6 +14,7 @@ from server.src.modules.boards.service import (
     list_boards,
     update_board,
 )
+from server.src.realtime.publisher import publish_to_board
 
 boards_bp = Blueprint("boards", __name__, url_prefix="/api/v1")
 
@@ -73,6 +74,7 @@ def handle_update_board(board_id: str):
         board_id=board_id,
         name=body.name,
     )
+    publish_to_board(g.tenant_id, board_id, "board:updated", {"board": board})
     return jsonify({"data": board}), 200
 
 
@@ -87,4 +89,5 @@ def handle_delete_board(board_id: str):
         user_id=g.user_id,
         board_id=board_id,
     )
+    publish_to_board(g.tenant_id, board_id, "board:deleted", {"boardId": board_id})
     return jsonify({"data": {"success": True}}), 200
