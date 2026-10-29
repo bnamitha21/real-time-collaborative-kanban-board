@@ -1,0 +1,45 @@
+# dependencies and builds
+node_modules/
+dist/
+build/
+.vite/
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+*.egg-info/
+
+# secrets and environment
+.env
+.env.*
+!.env.example
+
+# logs and OS files
+*.log
+.DS_Store
+.idea/
+.vscode/
+
+# ---- TEST CODE AND ARTIFACTS (never committed per INSTRUCTIONS.md) ----
+server/tests/
+client/tests/
+e2e/
+scripts/test-*.sh
+vitest.config.ts
+**/vitest.config.ts
+playwright.config.ts
+**/playwright.config.ts
+.env.test
+coverage/
+.coverage
+htmlcov/
+.pytest_cache/
+test-results/
+playwright-report/
+*.test.ts
+*.test.tsx
+*.spec.ts
+*.spec.tsx
+test_*.py
+*_test.py

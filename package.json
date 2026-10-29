@@ -1,0 +1,17 @@
+{
+  "name": "real-time-collaborative-kanban-board",
+  "private": true,
+  "workspaces": [
+    "client"
+  ],
+  "scripts": {
+    "dev:server": "python -m server.src.main",
+    "dev:client": "npm run dev -w client",
+    "build:client": "npm run build -w client",
+    "typecheck:client": "npm run typecheck -w client",
+    "typecheck:server": "mypy server/src",
+    "lint:server": "ruff check server",
+    "test:server": "pytest server/tests",
+    "test:client": "npm run test -w client"
+  }
+}
