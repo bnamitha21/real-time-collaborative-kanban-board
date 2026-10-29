@@ -25,6 +25,7 @@ PERMISSIONS: dict[str, list[str]] = {
     "activity.read": ["org_admin", "tenant_admin", "member"],
 }
 
+
 def can(
     role: Role,
     perm: str,
@@ -33,4 +34,7 @@ def can(
     allowed = PERMISSIONS.get(perm, [])
     if role in allowed:
         return True
-    return bool(role == "member" and "member:own" in allowed and ctx and ctx.get("is_assignee") is True)
+    is_assignee = bool(ctx and (ctx.get("is_assignee") or ctx.get("isAssignee")))
+    return bool(
+        role == "member" and "member:own" in allowed and is_assignee
+    )

@@ -4,6 +4,7 @@ from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 EMAIL_REGEX = re.compile(r"^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$")
 
+
 class RegisterInput(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
@@ -18,6 +19,7 @@ class RegisterInput(BaseModel):
         if not EMAIL_REGEX.match(clean):
             raise ValueError("Invalid email address format")
         return clean
+
 
 class LoginInput(BaseModel):
     model_config = ConfigDict(extra="forbid")

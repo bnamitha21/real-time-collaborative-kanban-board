@@ -7,11 +7,13 @@ from server.src.db.pool import with_tx
 
 Role = Literal["org_admin", "tenant_admin", "member"]
 
+
 @dataclass
 class TenantAccess:
     organization_id: str
     tenant_id: str
     role: Role
+
 
 def resolve_tenant_access(
     user_id: str,
@@ -19,6 +21,7 @@ def resolve_tenant_access(
     conn: Connection | None = None,
 ) -> TenantAccess | None:
     """Highest-privilege access the user holds for this tenant, or None. Never throws for 'no access'."""
+
     def _query(c: Connection) -> TenantAccess | None:
         with c.cursor() as cur:
             cur.execute(
@@ -48,12 +51,14 @@ def resolve_tenant_access(
         return _query(conn)
     return with_tx(_query)
 
+
 def resolve_org_role(
     user_id: str,
     org_id: str,
     conn: Connection | None = None,
 ) -> Literal["org_admin", "member_of_org"] | None:
     """org_admin row -> 'org_admin'; any membership in org -> 'member_of_org'; else None."""
+
     def _query(c: Connection) -> Literal["org_admin", "member_of_org"] | None:
         with c.cursor() as cur:
             cur.execute(

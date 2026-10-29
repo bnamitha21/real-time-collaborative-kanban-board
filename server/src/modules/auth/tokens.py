@@ -20,6 +20,7 @@ def create_access_token(user_id: str) -> str:
     }
     return jwt.encode(payload, env.JWT_ACCESS_SECRET, algorithm="HS256")
 
+
 def verify_access_token(token: str) -> str:
     try:
         payload = jwt.decode(token, env.JWT_ACCESS_SECRET, algorithms=["HS256"])
@@ -32,8 +33,10 @@ def verify_access_token(token: str) -> str:
     except jwt.PyJWTError as e:
         raise unauthenticated("Invalid access token") from e
 
+
 def hash_refresh_token(raw_token: str) -> str:
     return hashlib.sha256(raw_token.encode("utf-8")).hexdigest()
+
 
 def create_refresh_token(user_id: str, conn: Connection) -> str:
     raw_token = secrets.token_urlsafe(48)
@@ -50,7 +53,10 @@ def create_refresh_token(user_id: str, conn: Connection) -> str:
         )
     return raw_token
 
-def rotate_refresh_token(raw_token: str, conn: Connection) -> tuple[str | None, str | None, dict[str, Any]]:
+
+def rotate_refresh_token(
+    raw_token: str, conn: Connection
+) -> tuple[str | None, str | None, dict[str, Any]]:
     token_hash = hash_refresh_token(raw_token)
     now = datetime.now(UTC)
 
@@ -95,6 +101,7 @@ def rotate_refresh_token(raw_token: str, conn: Connection) -> tuple[str | None, 
     user_data = {"id": str(user_id), "email": str(email), "name": str(name)}
 
     return new_access_token, new_refresh_token, user_data
+
 
 def revoke_refresh_token(raw_token: str, conn: Connection) -> None:
     token_hash = hash_refresh_token(raw_token)

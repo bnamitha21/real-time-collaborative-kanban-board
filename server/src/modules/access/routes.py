@@ -6,6 +6,7 @@ from server.src.middleware.authenticate import authenticate
 
 workspaces_bp = Blueprint("workspaces", __name__, url_prefix="/api/v1/me")
 
+
 @workspaces_bp.get("/workspaces")
 @authenticate
 def get_workspaces():
@@ -72,11 +73,13 @@ def get_workspaces():
                     ]
                     org_role = "member"
 
-                result.append({
-                    "organization": {"id": str(org_id), "name": str(org_name)},
-                    "role": org_role,
-                    "tenants": tenants,
-                })
+                result.append(
+                    {
+                        "organization": {"id": str(org_id), "name": str(org_name)},
+                        "role": org_role,
+                        "tenants": tenants,
+                    }
+                )
 
             return result
 

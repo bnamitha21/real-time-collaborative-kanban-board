@@ -7,10 +7,13 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+
 def run_migrations(connection_string: str | None = None) -> None:
     conn_str = connection_string or os.environ.get("DATABASE_URL_OWNER")
     if not conn_str:
-        print("DATABASE_URL_OWNER environment variable is required for migrations.", file=sys.stderr)
+        print(
+            "DATABASE_URL_OWNER environment variable is required for migrations.", file=sys.stderr
+        )
         sys.exit(1)
 
     migrations_dir = Path(__file__).resolve().parent.parent.parent / "migrations"
@@ -37,11 +40,9 @@ def run_migrations(connection_string: str | None = None) -> None:
                 print(f"Applying migration {file_name}...")
                 with conn.transaction():
                     cur.execute(content)
-                    cur.execute(
-                        "INSERT INTO schema_migrations (name) VALUES (%s);",
-                        (file_name,)
-                    )
+                    cur.execute("INSERT INTO schema_migrations (name) VALUES (%s);", (file_name,))
                 print(f"Applied {file_name}")
+
 
 if __name__ == "__main__":
     run_migrations()

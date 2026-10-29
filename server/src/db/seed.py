@@ -10,6 +10,7 @@ load_dotenv()
 
 ph = PasswordHasher()
 
+
 def seed(conn_str: str | None = None) -> None:
     env_name = os.environ.get("FLASK_ENV", "development").lower()
     if env_name == "production":
@@ -25,7 +26,9 @@ def seed(conn_str: str | None = None) -> None:
 
     with psycopg.connect(url) as conn, conn.transaction(), conn.cursor() as cur:
         # 1. Clean existing seed data
-        cur.execute("TRUNCATE activity_logs, processed_actions, tasks, columns, boards, memberships, tenants, organizations, refresh_tokens, users CASCADE;")
+        cur.execute(
+            "TRUNCATE activity_logs, processed_actions, tasks, columns, boards, memberships, tenants, organizations, refresh_tokens, users CASCADE;"
+        )
 
         # 2. Users
         users_data = [
@@ -41,35 +44,48 @@ def seed(conn_str: str | None = None) -> None:
         for email, name in users_data:
             cur.execute(
                 "INSERT INTO users (email, name, password_hash) VALUES (%s, %s, %s) RETURNING id;",
-                (email, name, default_pw_hash)
+                (email, name, default_pw_hash),
             )
             row = cur.fetchone()
             assert row is not None
             user_ids[email] = row[0]
 
         # 3. Organizations
-        cur.execute("INSERT INTO organizations (name) VALUES (%s) RETURNING id;", ("Northwind Traders",))
+        cur.execute(
+            "INSERT INTO organizations (name) VALUES (%s) RETURNING id;", ("Northwind Traders",)
+        )
         row = cur.fetchone()
         assert row is not None
         northwind_id = row[0]
 
-        cur.execute("INSERT INTO organizations (name) VALUES (%s) RETURNING id;", ("Contoso Retail",))
+        cur.execute(
+            "INSERT INTO organizations (name) VALUES (%s) RETURNING id;", ("Contoso Retail",)
+        )
         row = cur.fetchone()
         assert row is not None
         contoso_id = row[0]
 
         # 4. Tenants (Branches)
-        cur.execute("INSERT INTO tenants (organization_id, name) VALUES (%s, %s) RETURNING id;", (northwind_id, "Hyderabad"))
+        cur.execute(
+            "INSERT INTO tenants (organization_id, name) VALUES (%s, %s) RETURNING id;",
+            (northwind_id, "Hyderabad"),
+        )
         row = cur.fetchone()
         assert row is not None
         hyd_id = row[0]
 
-        cur.execute("INSERT INTO tenants (organization_id, name) VALUES (%s, %s) RETURNING id;", (northwind_id, "Vijayawada"))
+        cur.execute(
+            "INSERT INTO tenants (organization_id, name) VALUES (%s, %s) RETURNING id;",
+            (northwind_id, "Vijayawada"),
+        )
         row = cur.fetchone()
         assert row is not None
         vja_id = row[0]
 
-        cur.execute("INSERT INTO tenants (organization_id, name) VALUES (%s, %s) RETURNING id;", (contoso_id, "Chennai"))
+        cur.execute(
+            "INSERT INTO tenants (organization_id, name) VALUES (%s, %s) RETURNING id;",
+            (contoso_id, "Chennai"),
+        )
         row = cur.fetchone()
         assert row is not None
         chennai_id = row[0]
@@ -88,7 +104,7 @@ def seed(conn_str: str | None = None) -> None:
         for u_id, o_id, t_id, role in memberships:
             cur.execute(
                 "INSERT INTO memberships (user_id, organization_id, tenant_id, role) VALUES (%s, %s, %s, %s);",
-                (u_id, o_id, t_id, role)
+                (u_id, o_id, t_id, role),
             )
 
         # 6. Boards and Columns for each branch
@@ -103,19 +119,23 @@ def seed(conn_str: str | None = None) -> None:
         for o_id, t_id, creator_id in branches:
             cur.execute(
                 "INSERT INTO boards (organization_id, tenant_id, name, created_by) VALUES (%s, %s, %s, %s) RETURNING id;",
-                (o_id, t_id, "Sprint Board", creator_id)
+                (o_id, t_id, "Sprint Board", creator_id),
             )
             row = cur.fetchone()
             assert row is not None
             board_id = row[0]
             branch_boards[t_id] = board_id
 
-            cols = [("todo", "To Do", 0), ("in_progress", "In Progress", 1), ("completed", "Completed", 2)]
+            cols = [
+                ("todo", "To Do", 0),
+                ("in_progress", "In Progress", 1),
+                ("completed", "Completed", 2),
+            ]
             cols_map = {}
             for key, name, pos in cols:
                 cur.execute(
                     "INSERT INTO columns (tenant_id, board_id, key, name, position) VALUES (%s, %s, %s, %s, %s) RETURNING id;",
-                    (t_id, board_id, key, name, pos)
+                    (t_id, board_id, key, name, pos),
                 )
                 col_row = cur.fetchone()
                 assert col_row is not None
@@ -144,10 +164,11 @@ def seed(conn_str: str | None = None) -> None:
                 INSERT INTO tasks (tenant_id, board_id, column_id, title, description, assignee_id, position, priority, version, created_by)
                 VALUES (%s, %s, %s, %s, %s, %s, %s, %s, 1, %s);
                 """,
-                (hyd_id, hyd_board, hyd_todo, title, desc, assigned, pos, prio, creator)
+                (hyd_id, hyd_board, hyd_todo, title, desc, assigned, pos, prio, creator),
             )
 
         print("Seed data successfully inserted.")
+
 
 if __name__ == "__main__":
     seed()

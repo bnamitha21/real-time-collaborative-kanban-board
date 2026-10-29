@@ -10,11 +10,16 @@ from server.src.lib.errors import rate_limited
 
 _request_log: dict[str, list[float]] = defaultdict(list)
 
+
 def rate_limit(max_requests: int = 10, window_seconds: int = 60) -> Callable[..., Any]:
     def decorator(fn: Callable[..., Any]) -> Callable[..., Any]:
         @wraps(fn)
         def wrapper(*args: Any, **kwargs: Any) -> Any:
-            ip = request.headers.get("X-Forwarded-For", request.remote_addr or "unknown").split(",")[0].strip()
+            ip = (
+                request.headers.get("X-Forwarded-For", request.remote_addr or "unknown")
+                .split(",")[0]
+                .strip()
+            )
             key = f"{request.endpoint}:{ip}"
             now = time.time()
             cutoff = now - window_seconds
@@ -31,6 +36,7 @@ def rate_limit(max_requests: int = 10, window_seconds: int = 60) -> Callable[...
         return wrapper
 
     return decorator
+
 
 def reset_rate_limits() -> None:
     _request_log.clear()

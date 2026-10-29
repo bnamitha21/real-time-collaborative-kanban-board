@@ -21,6 +21,7 @@ auth_bp = Blueprint("auth", __name__, url_prefix="/api/v1/auth")
 REFRESH_COOKIE_NAME = "refresh"
 REFRESH_COOKIE_PATH = "/api/v1/auth"
 
+
 def set_refresh_cookie(response, token: str) -> None:
     max_age = env.REFRESH_TTL_DAYS * 24 * 60 * 60
     is_prod = env.FLASK_ENV == "production"
@@ -34,11 +35,13 @@ def set_refresh_cookie(response, token: str) -> None:
         path=REFRESH_COOKIE_PATH,
     )
 
+
 def clear_refresh_cookie(response) -> None:
     response.delete_cookie(
         REFRESH_COOKIE_NAME,
         path=REFRESH_COOKIE_PATH,
     )
+
 
 @auth_bp.post("/register")
 @rate_limit(max_requests=10, window_seconds=60)
@@ -66,6 +69,7 @@ def register():
 
     user_info = with_tx(_insert)
     return jsonify({"data": user_info}), 201
+
 
 @auth_bp.post("/login")
 @rate_limit(max_requests=10, window_seconds=60)
@@ -101,6 +105,7 @@ def login():
     set_refresh_cookie(resp, refresh_token)
     return resp
 
+
 @auth_bp.post("/refresh")
 def refresh():
     raw_cookie = request.cookies.get(REFRESH_COOKIE_NAME)
@@ -122,6 +127,7 @@ def refresh():
     set_refresh_cookie(resp, new_refresh_token)
     return resp
 
+
 @auth_bp.post("/logout")
 def logout():
     raw_cookie = request.cookies.get(REFRESH_COOKIE_NAME)
@@ -131,6 +137,7 @@ def logout():
     resp = make_response(jsonify({"data": {"success": True}}), 200)
     clear_refresh_cookie(resp)
     return resp
+
 
 @auth_bp.get("/me")
 @authenticate

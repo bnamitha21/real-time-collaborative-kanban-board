@@ -3,8 +3,10 @@ from argon2.exceptions import InvalidHashError, VerificationError, VerifyMismatc
 
 ph = PasswordHasher()
 
+
 def hash_password(password: str) -> str:
     return ph.hash(password)
+
 
 def verify_password(hash_val: str, password: str) -> bool:
     try:

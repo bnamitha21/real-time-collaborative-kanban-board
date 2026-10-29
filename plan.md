@@ -739,7 +739,7 @@ All auth tests green. `curl -i localhost:4000/healthz` returns 200.
 
 ### Steps
 
-- [ ] **3.1 Access resolver** `server/src/modules/access/access.ts`
+- [x] **3.1 Access resolver** `server/src/modules/access/access.ts`
 
 ```ts
 export type Role = "org_admin" | "tenant_admin" | "member";
@@ -779,7 +779,7 @@ export async function resolveOrgRole(
 
 `pool` here is the plain pool: `tenants`, `memberships`, `organizations` are not under RLS, so lookup works without `app.tenant_id`.
 
-- [ ] **3.2 Permission table** `server/src/modules/access/permissions.ts` — single source of truth
+- [x] **3.2 Permission table** `server/src/modules/access/permissions.ts` — single source of truth
 
 ```ts
 export const PERMISSIONS = {
@@ -821,7 +821,7 @@ export function can(
 }
 ```
 
-- [ ] **3.3 Express guards** `server/src/middleware/tenantAccess.ts`
+- [x] **3.3 Express guards** `server/src/middleware/tenantAccess.ts`
   - `loadBoardScope(boardId)` → `SELECT tenant_id, organization_id FROM boards WHERE id=$1` using the **owner-free** lookup (a `SECURITY DEFINER` SQL function `board_scope(uuid)` created in migration `003_scope_fns.sql`, returns only `tenant_id, organization_id`). This avoids needing a tenant to find the tenant, and leaks nothing because the caller still must pass `resolveTenantAccess`.
   - Same function `task_scope(uuid)` → `tenant_id, board_id`.
   - `requireTenantAccess(perm)` — takes the tenant id from the **resource**, calls `resolveTenantAccess`, returns 404 if null, 403 if `!can(...)`, and attaches `req.access`.
@@ -840,7 +840,7 @@ REVOKE ALL ON FUNCTION board_scope(uuid), task_scope(uuid) FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION board_scope(uuid), task_scope(uuid) TO kanban_app;
 ```
 
-- [ ] **3.4 Workspaces endpoint** `GET /me/workspaces` → feeds the Organization selector and Branch switcher:
+- [x] **3.4 Workspaces endpoint** `GET /me/workspaces` → feeds the Organization selector and Branch switcher:
 
 ```json
 {
@@ -910,9 +910,9 @@ Columns: the three columns are predefined and created with the board; they canno
 
 ### Steps
 
-- [ ] **4.1** Zod schemas per module in `modules/<name>/schemas.ts`. Reject unknown keys with `.strict()`.
-- [ ] **4.2** Services in `modules/<name>/service.ts`. All tenant-scoped SQL runs inside `withTenant()`.
-- [ ] **4.3** Board creation transaction:
+- [x] **4.1** Zod schemas per module in `modules/<name>/schemas.ts`. Reject unknown keys with `.strict()`.
+- [x] **4.2** Services in `modules/<name>/service.ts`. All tenant-scoped SQL runs inside `withTenant()`.
+- [x] **4.3** Board creation transaction:
 
 ```ts
 export async function createBoard(ctx: Ctx, tenantId: string, name: string) {
@@ -947,9 +947,9 @@ export async function createBoard(ctx: Ctx, tenantId: string, name: string) {
 }
 ```
 
-- [ ] **4.4** Task create assigns position at the **bottom** of the column: `generateKeyBetween(lastPositionInColumn, null)`. Assignee must be a member (or admin) of the same tenant; otherwise 422-style `VALIDATION_ERROR` "Assignee does not belong to this branch".
-- [ ] **4.5** Task update changes only provided fields, always `WHERE id=$1 AND tenant_id=$2 AND version=$3`, with `SET version = version + 1`. See Phase 5 for the locked version.
-- [ ] **4.6** Snapshot query for `GET /boards/:boardId`:
+- [x] **4.4** Task create assigns position at the **bottom** of the column: `generateKeyBetween(lastPositionInColumn, null)`. Assignee must be a member (or admin) of the same tenant; otherwise 422-style `VALIDATION_ERROR` "Assignee does not belong to this branch".
+- [x] **4.5** Task update changes only provided fields, always `WHERE id=$1 AND tenant_id=$2 AND version=$3`, with `SET version = version + 1`. See Phase 5 for the locked version.
+- [x] **4.6** Snapshot query for `GET /boards/:boardId`:
 
 ```sql
 SELECT id, column_id AS "columnId", title, description, assignee_id AS "assigneeId",

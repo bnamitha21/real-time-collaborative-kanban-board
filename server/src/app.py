@@ -10,6 +10,11 @@ from server.src.db.pool import DATABASE_URL
 from server.src.lib.errors import AppError
 from server.src.modules.access.routes import workspaces_bp
 from server.src.modules.auth.routes import auth_bp
+from server.src.modules.boards.routes import boards_bp
+from server.src.modules.columns.routes import columns_bp
+from server.src.modules.organizations.routes import organizations_bp
+from server.src.modules.tasks.routes import tasks_bp
+from server.src.modules.tenants.routes import tenants_bp
 
 # Configure structured logging
 logging.basicConfig(
@@ -17,6 +22,7 @@ logging.basicConfig(
     format='{"time": "%(asctime)s", "level": "%(levelname)s", "name": "%(name)s", "message": "%(message)s"}',
 )
 logger = logging.getLogger("kanban_server")
+
 
 def create_app() -> Flask:
     app = Flask(__name__)
@@ -64,6 +70,11 @@ def create_app() -> Flask:
     # Mount routes
     app.register_blueprint(auth_bp)
     app.register_blueprint(workspaces_bp)
+    app.register_blueprint(organizations_bp)
+    app.register_blueprint(tenants_bp)
+    app.register_blueprint(boards_bp)
+    app.register_blueprint(columns_bp)
+    app.register_blueprint(tasks_bp)
 
     # Error handlers
     @app.errorhandler(AppError)
@@ -80,12 +91,16 @@ def create_app() -> Flask:
 
     @app.errorhandler(413)
     def handle_large_payload(_err):
-        return jsonify({"error": {"code": "VALIDATION_ERROR", "message": "Payload exceeds 100 kB limit"}}), 400
+        return jsonify(
+            {"error": {"code": "VALIDATION_ERROR", "message": "Payload exceeds 100 kB limit"}}
+        ), 400
 
     @app.errorhandler(Exception)
     def handle_unexpected_error(err: Exception):
         req_id = getattr(g, "request_id", "unknown")
         logger.error(f"[{req_id}] Unexpected internal error: {err}")
-        return jsonify({"error": {"code": "INTERNAL", "message": "An internal error occurred."}}), 500
+        return jsonify(
+            {"error": {"code": "INTERNAL", "message": "An internal error occurred."}}
+        ), 500
 
     return app
