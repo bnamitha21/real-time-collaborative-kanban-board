@@ -1,0 +1,152 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  lint-and-typecheck:
+    name: Lint & Typecheck
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: "pip"
+
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r server/requirements.txt
+          pip install ruff mypy pytest pytest-asyncio httpx
+
+      - name: Run Ruff Lint
+        run: ruff check server
+
+      - name: Run Mypy Typecheck
+        run: mypy server/src
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+          cache-dependency-path: client/package-lock.json
+
+      - name: Install Node dependencies
+        run: npm ci --prefix client
+
+      - name: Run Client Typecheck
+        run: npm run typecheck -w client
+
+      - name: Run Secrets Check
+        run: bash scripts/check-secrets.sh
+
+  test-backend:
+    name: Test Backend
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: owner
+          POSTGRES_PASSWORD: owner_pw
+          POSTGRES_DB: kanban
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: "pip"
+
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r server/requirements.txt
+          pip install pytest pytest-asyncio httpx
+
+      - name: Run Alembic Migrations
+        env:
+          DATABASE_URL: postgresql+asyncpg://owner:owner_pw@localhost:5432/kanban
+        run: python -m server.src.db.migrate
+
+      - name: Run Backend Pytest Suite
+        env:
+          DATABASE_URL: postgresql+asyncpg://owner:owner_pw@localhost:5432/kanban
+          REDIS_URL: redis://localhost:6379/0
+          JWT_SECRET: test_jwt_secret_key_ci_only_32_chars_minimum
+        run: pytest server/tests
+
+  test-frontend:
+    name: Test Frontend & Build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+          cache-dependency-path: client/package-lock.json
+
+      - name: Install Node dependencies
+        run: npm ci --prefix client
+
+      - name: Run Vitest Suite
+        run: npm test -w client
+
+      - name: Run Client Production Build
+        run: npm run build -w client
+
+  docker-build:
+    name: Verify Docker Images
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: actions/setup-buildx-action@v3
+
+      - name: Build Server Docker Image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: server/Dockerfile
+          push: false
+
+      - name: Build Client Docker Image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./client
+          file: client/Dockerfile
+          push: false

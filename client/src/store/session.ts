@@ -250,3 +250,4 @@ export const useSessionStore = create<SessionState>((set, get) => ({
     return currentOrg.tenants.find((t) => t.id === activeTenantId) || null;
   },
 }));
+

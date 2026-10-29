@@ -1,0 +1,54 @@
+.stack {
+  display: flex;
+  align-items: center;
+  padding-left: var(--s2);
+}
+
+.avatarWrapper {
+  position: relative;
+  margin-left: -8px;
+  transition: transform 150ms ease, z-index 150ms ease;
+}
+
+.avatarWrapper:first-child {
+  margin-left: 0;
+}
+
+.avatarWrapper:hover {
+  transform: translateY(-2px);
+  z-index: 10;
+}
+
+.statusDot {
+  position: absolute;
+  bottom: -1px;
+  right: -1px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  border: 1.5px solid var(--surface);
+}
+
+.online {
+  background: var(--online);
+}
+
+.offline {
+  background: var(--offline);
+}
+
+.overflowBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--surface-2);
+  border: 1.5px solid var(--line);
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  color: var(--ink-2);
+  margin-left: -8px;
+  user-select: none;
+}

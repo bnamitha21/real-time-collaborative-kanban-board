@@ -13,6 +13,8 @@ export interface DialogProps {
 export function Dialog({ open, title, onClose, children, footer }: DialogProps) {
   const dialogRef = useRef<HTMLDivElement>(null);
   const previouslyFocusedRef = useRef<HTMLElement | null>(null);
+  const onCloseRef = useRef(onClose);
+  onCloseRef.current = onClose;
 
   useEffect(() => {
     if (!open) return;
@@ -21,7 +23,7 @@ export function Dialog({ open, title, onClose, children, footer }: DialogProps) 
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
         e.stopPropagation();
-        onClose();
+        onCloseRef.current();
         return;
       }
 
@@ -45,21 +47,31 @@ export function Dialog({ open, title, onClose, children, footer }: DialogProps) 
 
     document.addEventListener("keydown", handleKeyDown);
 
-    // Initial focus into dialog
-    const focusable = dialogRef.current?.querySelectorAll<HTMLElement>(
-      'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
-    );
-    if (focusable && focusable.length > 0) {
-      focusable[0].focus();
-    } else {
-      dialogRef.current?.focus();
+    // Initial focus on open: prefer autofocus element or input over close button
+    const container = dialogRef.current;
+    if (container && !container.contains(document.activeElement)) {
+      const preferred = container.querySelector<HTMLElement>(
+        '[autofocus], input:not([disabled]), textarea:not([disabled]), select:not([disabled])',
+      );
+      if (preferred) {
+        preferred.focus();
+      } else {
+        const focusable = container.querySelectorAll<HTMLElement>(
+          'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
+        );
+        if (focusable.length > 0) {
+          focusable[0].focus();
+        } else {
+          container.focus();
+        }
+      }
     }
 
     return () => {
       document.removeEventListener("keydown", handleKeyDown);
       previouslyFocusedRef.current?.focus();
     };
-  }, [open, onClose]);
+  }, [open]);
 
   if (!open) return null;
 

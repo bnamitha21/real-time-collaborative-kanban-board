@@ -1,0 +1,48 @@
+.activityList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s3);
+  padding: var(--s2) 0;
+}
+
+.activityItem {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--s3);
+  padding: var(--s3);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  transition: background-color 150ms ease;
+}
+
+.activityItem:hover {
+  background: var(--surface-2);
+}
+
+.itemContent {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.sentence {
+  font-size: var(--fs-sm);
+  color: var(--ink);
+  line-height: 1.4;
+  margin: 0;
+}
+
+.timestamp {
+  font-size: var(--fs-xs);
+  color: var(--ink-3);
+  font-family: var(--font-mono);
+}
+
+.emptyState {
+  text-align: center;
+  padding: var(--s6);
+  color: var(--ink-3);
+  font-size: var(--fs-sm);
+}

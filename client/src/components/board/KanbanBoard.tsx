@@ -22,6 +22,10 @@ import { PlusIcon } from "../icons";
 import { http } from "../../api/http";
 import { useBoardStore, type TaskDto, type ColumnDto } from "../../store/board";
 import { useSessionStore } from "../../store/session";
+import { useHistoryStore } from "../../store/history";
+import { useActivityStore } from "../../store/activity";
+import { moveTask } from "../../store/actions";
+import { subscribeBoard, unsubscribeBoard } from "../../realtime/socket";
 import { can } from "../../lib/permissions";
 
 export interface BoardSummary {
@@ -93,6 +97,10 @@ export function KanbanBoard() {
   // Load boards and members for the active branch
   const fetchBranchData = useCallback(
     async (epochAtStart: number) => {
+      // Clear undo history & activity when switching branch (Phase 9.5 & 13.1)
+      useHistoryStore.getState().clear();
+      useActivityStore.getState().clear();
+
       if (!activeTenantId) {
         clear();
         setBoards([]);
@@ -174,7 +182,11 @@ export function KanbanBoard() {
 
   useEffect(() => {
     if (selectedBoardId) {
+      subscribeBoard(selectedBoardId);
       fetchBoardSnapshot(selectedBoardId, requestEpoch);
+      return () => {
+        unsubscribeBoard(selectedBoardId);
+      };
     }
   }, [selectedBoardId, fetchBoardSnapshot, requestEpoch]);
 
@@ -229,22 +241,14 @@ export function KanbanBoard() {
 
   // Quick move via context menu
   const handleQuickMove = async (task: TaskDto, toColumnId: string) => {
-    if (!activeTenantId) return;
-    try {
-      const res = await http.post<{ data: TaskDto }>(
-        `/tasks/${task.id}/move`,
-        {
-          toColumnId,
-          afterTaskId: null,
-          expectedVersion: task.version,
-        },
-      );
-      applyServerTask(res.data);
+    const res = await moveTask(task.id, toColumnId, null);
+    if (res.conflict) {
+      setToastMessage("This task was changed by another user. Showing the latest version.");
+    } else if (!res.success) {
+      setToastMessage(res.error || "Move failed");
+    } else {
       const toCol = columns.find((c) => c.id === toColumnId);
       setToastMessage(`Moved "${task.title}" to ${toCol?.name || "column"}`);
-    } catch {
-      setToastMessage("Move conflict. Reloading task...");
-      if (selectedBoardId) fetchBoardSnapshot(selectedBoardId, requestEpoch);
     }
   };
 
@@ -405,19 +409,11 @@ export function KanbanBoard() {
       } of ${finalOrder.length}`,
     );
 
-    try {
-      const res = await http.post<{ data: TaskDto }>(
-        `/tasks/${aId}/move`,
-        {
-          toColumnId,
-          afterTaskId,
-          expectedVersion: activeTask.version,
-        },
-      );
-      applyServerTask(res.data);
-    } catch {
-      setToastMessage("Move conflict occurred. Refreshing board...");
-      if (selectedBoardId) fetchBoardSnapshot(selectedBoardId, requestEpoch);
+    const res = await moveTask(aId, toColumnId, afterTaskId);
+    if (res.conflict) {
+      setToastMessage("This task was changed by another user. Showing the latest version.");
+    } else if (!res.success) {
+      setToastMessage(res.error || "Move failed");
     }
   };
 

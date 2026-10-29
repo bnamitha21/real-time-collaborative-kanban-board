@@ -1617,7 +1617,7 @@ Detail panel works end to end; tests green.
 
 ### Steps
 
-- [ ] **12.1 Socket client** `client/src/realtime/socket.ts`
+- [x] **12.1 Socket client** `client/src/realtime/socket.ts`
 
 ```ts
 import { io, Socket } from "socket.io-client";
@@ -1658,7 +1658,7 @@ export const subscribeBoard = (boardId: string) =>
 
 On every `connect` (including reconnect) re-send `board:subscribe` for the open board, then refetch the snapshot (Phase 15).
 
-- [ ] **12.2 Optimistic move** in `client/src/store/actions.ts`
+- [x] **12.2 Optimistic move** in `client/src/store/actions.ts`
 
 ```ts
 export async function moveTask(
@@ -1731,10 +1731,10 @@ export async function moveTask(
 }
 ```
 
-- [ ] **12.3** Same pattern for create (temporary client id replaced by the server id on response), update, delete.
-- [ ] **12.4 Ignore own echoes**: socket events carrying an `actionId` already confirmed locally are no-ops because `applyServerTask` ignores `version <= local`. Events for tasks in a _pending_ local state with a lower expected version are applied only after the REST call settles (queue them per task id to avoid flicker).
-- [ ] **12.5 Conflict UX**: a toast (bottom-left, plain text, 6 s) and a 1.2 s outline on the affected card in `--warn`. The card shows the server's state. No modal.
-- [ ] **12.6 Connection indicator** in the top bar: dot + text, states **Connected**, **Reconnecting…**, **Offline**.
+- [x] **12.3** Same pattern for create (temporary client id replaced by the server id on response), update, delete.
+- [x] **12.4 Ignore own echoes**: socket events carrying an `actionId` already confirmed locally are no-ops because `applyServerTask` ignores `version <= local`. Events for tasks in a _pending_ local state with a lower expected version are applied only after the REST call settles (queue them per task id to avoid flicker).
+- [x] **12.5 Conflict UX**: a toast (bottom-left, plain text, 6 s) and a 1.2 s outline on the affected card in `--warn`. The card shows the server's state. No modal.
+- [x] **12.6 Connection indicator** in the top bar: dot + text, states **Connected**, **Reconnecting…**, **Offline**.
 
 ### Tests
 
@@ -1759,7 +1759,7 @@ Two-user conflict scenario from the specification behaves exactly as described; 
 
 ### Steps
 
-- [ ] **13.1 History store** `client/src/store/history.ts`: two stacks (`undo`, `redo`), max 50 entries, cleared on branch switch, board switch and logout. Entry shape:
+- [x] **13.1 History store** `client/src/store/history.ts`: two stacks (`undo`, `redo`), max 50 entries, cleared on branch switch, board switch and logout. Entry shape:
 
 ```ts
 type HistoryEntry =
@@ -1782,7 +1782,7 @@ type HistoryEntry =
 type Place = { columnId: string; afterTaskId: string | null };
 ```
 
-- [ ] **13.2 Undo = inverse command with the _current_ version**
+- [x] **13.2 Undo = inverse command with the _current_ version**
 
 ```ts
 export async function undo() {
@@ -1803,11 +1803,11 @@ export async function undo() {
 
 The local version check is a fast path; the server's `expectedVersion` check is the authority, so a race between the local check and the request is still caught (409 → same warning).
 
-- [ ] **13.3 Redo** mirrors undo using the `to`/`after` data and the version returned by the undo.
-- [ ] **13.4 Neighbour fallback**: if `from.afterTaskId` no longer exists in the column (deleted or moved by someone else), send `afterTaskId: null` only if the task itself is still at `versionAfter`; the position is then "top of column" and the toast says "Restored to the top of To Do."
-- [ ] **13.5 Deleted-task undo**: re-creating a deleted task makes a **new** task (new id, version 1) at its former column/position; the activity log shows `task.created`. Redo of that deletes it. State this in `docs/README` trade-offs.
-- [ ] **13.6 UI**: Undo and Redo buttons in the top bar (disabled when the stack is empty, tooltips show the action name, e.g. "Undo: moved Build Login Page"), shortcuts `Ctrl/Cmd+Z` and `Ctrl/Cmd+Shift+Z` (ignored while typing in an input or textarea).
-- [ ] **13.7** Undo/redo actions go through the same optimistic path, carry their own `actionId`, are logged in `activity_logs` like any other action, and are broadcast to others.
+- [x] **13.3 Redo** mirrors undo using the `to`/`after` data and the version returned by the undo.
+- [x] **13.4 Neighbour fallback**: if `from.afterTaskId` no longer exists in the column (deleted or moved by someone else), send `afterTaskId: null` only if the task itself is still at `versionAfter`; the position is then "top of column" and the toast says "Restored to the top of To Do."
+- [x] **13.5 Deleted-task undo**: re-creating a deleted task makes a **new** task (new id, version 1) at its former column/position; the activity log shows `task.created`. Redo of that deletes it. State this in `docs/README` trade-offs.
+- [x] **13.6 UI**: Undo and Redo buttons in the top bar (disabled when the stack is empty, tooltips show the action name, e.g. "Undo: moved Build Login Page"), shortcuts `Ctrl/Cmd+Z` and `Ctrl/Cmd+Shift+Z` (ignored while typing in an input or textarea).
+- [x] **13.7** Undo/redo actions go through the same optimistic path, carry their own `actionId`, are logged in `activity_logs` like any other action, and are broadcast to others.
 
 ### Tests
 
@@ -1830,9 +1830,9 @@ Undo/redo suite green, including the two-user refusal case.
 
 ### Steps
 
-- [ ] **14.1 Presence stack** in the top bar: up to 5 avatars (initials) with a 8px status dot (`--online` or `--offline`), `+N` overflow; tooltip lists names with "Online"/"Offline". Online users sorted first. Data from `presence:update`, scoped to the active branch only; cleared on switch.
-- [ ] **14.2 Activity drawer** (button "Activity" in the top bar): list newest first with infinite scroll (`cursor`), each row: avatar, sentence ("Priya moved Fix API Bug from To Do to In Progress"), relative time with the exact timestamp in the `title` attribute. Filters: this board / this task. New entries stream in live (append `activity` events: add a `activity:created` event to the contract and publish it with the same after-commit rule).
-- [ ] **14.3** Sentences are built from structured `before/after` through a pure function `describeActivity(entry)`, with one template per action type.
+- [x] **14.1 Presence stack** in the top bar: up to 5 avatars (initials) with a 8px status dot (`--online` or `--offline`), `+N` overflow; tooltip lists names with "Online"/"Offline". Online users sorted first. Data from `presence:update`, scoped to the active branch only; cleared on switch.
+- [x] **14.2 Activity drawer** (button "Activity" in the top bar): list newest first with infinite scroll (`cursor`), each row: avatar, sentence ("Priya moved Fix API Bug from To Do to In Progress"), relative time with the exact timestamp in the `title` attribute. Filters: this board / this task. New entries stream in live (append `activity` events: add a `activity:created` event to the contract and publish it with the same after-commit rule).
+- [x] **14.3** Sentences are built from structured `before/after` through a pure function `describeActivity(entry)`, with one template per action type.
 
 ### Tests
 
@@ -1854,8 +1854,8 @@ Presence and activity verified in two browsers.
 
 ### Steps
 
-- [ ] **15.1 Connection state machine** `client/src/realtime/connection.ts`: `connected → reconnecting → offline` using Socket.IO events plus `navigator.onLine` and a 5 s `HEAD /healthz` probe when the socket is down. Indicator updates immediately.
-- [ ] **15.2 Persistent queue** `client/src/store/offlineQueue.ts` using `idb-keyval`, keyed per `userId:tenantId`:
+- [x] **15.1 Connection state machine** `client/src/realtime/connection.ts`: `connected → reconnecting → offline` using Socket.IO events plus `navigator.onLine` and a 5 s `HEAD /healthz` probe when the socket is down. Indicator updates immediately.
+- [x] **15.2 Persistent queue** `client/src/store/offlineQueue.ts` using `idb-keyval`, keyed per `userId:tenantId`:
 
 ```ts
 interface QueuedAction {
@@ -1871,17 +1871,17 @@ interface QueuedAction {
 
 Actions are stored in order. The queue is cleared on logout.
 
-- [ ] **15.3 Offline behaviour**: while offline, supported actions (move, reorder, edit, create, delete) are applied optimistically with the `Pending` marker and queued. A banner reads "You are offline. Changes are pending and are not saved yet." Nothing is described as saved.
-- [ ] **15.4 Recovery sequence** (strict order)
+- [x] **15.3 Offline behaviour**: while offline, supported actions (move, reorder, edit, create, delete) are applied optimistically with the `Pending` marker and queued. A banner reads "You are offline. Changes are pending and are not saved yet." Nothing is described as saved.
+- [x] **15.4 Recovery sequence** (strict order)
   1. Socket reconnects (refresh token first if expired).
   2. Re-send `board:subscribe`.
   3. Fetch the full snapshot `GET /boards/:id` and `board.load()` it, but keep pending local overlays.
   4. Replay queued actions **in order**, one at a time, each with its original `actionId` and `expectedVersion = baseVersion`.
   5. For each response: success → mark confirmed and apply the server task; `409` → mark `conflict`, apply the server's current task, collect for the summary; `403/404` → `failed`; network error → stop and retry later.
   6. When the queue is empty show a summary toast: "3 changes saved. 1 change could not be applied because the task was changed by someone else." with a **Review** button listing conflicted items (title, what you tried, current state) and a **Retry** action that re-issues the change using the current version after the user confirms.
-- [ ] **15.5 Idempotency**: because each queued item keeps its `actionId`, a request that reached the server but whose response was lost is replayed safely; the server returns the stored result without writing again.
-- [ ] **15.6 Reload while offline with pending items**: the queue is restored from IndexedDB on startup; the UI shows the pending count and attempts recovery once online.
-- [ ] **15.7 Coalescing**: consecutive queued moves of the same task are collapsed into one (first `baseVersion`, last target) to reduce conflicts.
+- [x] **15.5 Idempotency**: because each queued item keeps its `actionId`, a request that reached the server but whose response was lost is replayed safely; the server returns the stored result without writing again.
+- [x] **15.6 Reload while offline with pending items**: the queue is restored from IndexedDB on startup; the UI shows the pending count and attempts recovery once online.
+- [x] **15.7 Coalescing**: consecutive queued moves of the same task are collapsed into one (first `baseVersion`, last target) to reduce conflicts.
 
 ### Tests
 
@@ -1943,7 +1943,7 @@ All edge suites green three times in a row.
 
 Produce these files; they are committed (unlike tests).
 
-- [ ] **17.1 `docs/ER.md`** — Mermaid ER diagram plus a short explanation of the composite foreign keys that make cross-tenant references impossible.
+- [x] **17.1 `docs/ER.md`** — Mermaid ER diagram plus a short explanation of the composite foreign keys that make cross-tenant references impossible.
 
 ```mermaid
 erDiagram
@@ -1962,10 +1962,10 @@ erDiagram
 
 Export a PNG/SVG of the diagram as well (`docs/er-diagram.svg`) for graders who do not render Mermaid.
 
-- [ ] **17.2 `README.md`** with the exact sections: Overview (use the project description text), Architecture (diagram of client ↔ REST ↔ Postgres, client ↔ Socket.IO rooms), **Tenancy model** (hierarchy, `tenant_id` on all business data, resolution from the resource, RLS second layer, 404-not-403 policy, room naming), **Concurrency** (OCC with versions, row lock, idempotency keys, why not pessimistic locking, why not rely on WebSocket events), **Ordering** (fractional indexing, rebalance), **Real-time** (WebSocket vs SSE decision, rooms, presence, scale-out with Redis), **Undo/redo** (validation approach and limitation for deleted tasks), **Network recovery**, **Trade-offs and limitations**, **Running locally**, **Environment variables**, **Project structure**, **Security checklist**, **Testing** (explain tests exist locally, are git-ignored by project choice, and list the commands).
-- [ ] **17.3 `docs/API.md`** — every route from Phase 4/5/6: method, path, permission, request body, response, error codes, example `curl`.
-- [ ] **17.4 `docs/WEBSOCKET.md`** — handshake, auth, rooms, events table from Phase 7 (plus `activity:created`), ack shapes, reconnect and resync procedure, presence semantics.
-- [ ] **17.5 `docs/DECISIONS.md`** — short ADR entries: Socket.IO over SSE; OCC over pessimistic locking; fractional indexing over integer positions; raw SQL over ORM; RLS in addition to application checks; tokens not carrying roles.
+- [x] **17.2 `README.md`** with the exact sections: Overview (use the project description text), Architecture (diagram of client ↔ REST ↔ Postgres, client ↔ Socket.IO rooms), **Tenancy model** (hierarchy, `tenant_id` on all business data, resolution from the resource, RLS second layer, 404-not-403 policy, room naming), **Concurrency** (OCC with versions, row lock, idempotency keys, why not pessimistic locking, why not rely on WebSocket events), **Ordering** (fractional indexing, rebalance), **Real-time** (WebSocket vs SSE decision, rooms, presence, scale-out with Redis), **Undo/redo** (validation approach and limitation for deleted tasks), **Network recovery**, **Trade-offs and limitations**, **Running locally**, **Environment variables**, **Project structure**, **Security checklist**, **Testing** (explain tests exist locally, are git-ignored by project choice, and list the commands).
+- [x] **17.3 `docs/API.md`** — every route from Phase 4/5/6: method, path, permission, request body, response, error codes, example `curl`.
+- [x] **17.4 `docs/WEBSOCKET.md`** — handshake, auth, rooms, events table from Phase 7 (plus `activity:created`), ack shapes, reconnect and resync procedure, presence semantics.
+- [x] **17.5 `docs/DECISIONS.md`** — short ADR entries: Socket.IO over SSE; OCC over pessimistic locking; fractional indexing over integer positions; raw SQL over ORM; RLS in addition to application checks; tokens not carrying roles.
 
 ### Tests
 
@@ -1981,8 +1981,8 @@ Docs complete; doc-coverage script passes.
 
 ### Steps
 
-- [ ] **18.1 Server hardening**: `helmet` with CSP for the API; `app.set("trust proxy", 1)` behind a reverse proxy; `Cache-Control: no-store` for `/api/v1`; request timeout 15 s; `express-rate-limit` general limit (300/min/IP) plus the stricter auth limits; pg pool timeouts (`connectionTimeoutMillis: 5000`, `statement_timeout: 10000` per connection via `options`); graceful shutdown on `SIGTERM` (stop accepting, `io.close()`, drain, `pool.end()`).
-- [ ] **18.2 Dockerfiles**
+- [x] **18.1 Server hardening**: `helmet` with CSP for the API; `app.set("trust proxy", 1)` behind a reverse proxy; `Cache-Control: no-store` for `/api/v1`; request timeout 15 s; `express-rate-limit` general limit (300/min/IP) plus the stricter auth limits; pg pool timeouts (`connectionTimeoutMillis: 5000`, `statement_timeout: 10000` per connection via `options`); graceful shutdown on `SIGTERM` (stop accepting, `io.close()`, drain, `pool.end()`).
+- [x] **18.2 Dockerfiles**
 
 ```dockerfile
 # server/Dockerfile
@@ -2024,12 +2024,12 @@ COPY --from=build /app/client/dist /usr/share/nginx/html
 
 `client/nginx.conf`: serve the SPA with `try_files $uri /index.html`, proxy `/api/` and `/socket.io/` to `server:4000` with `proxy_http_version 1.1; proxy_set_header Upgrade $http_upgrade; proxy_set_header Connection "upgrade";`, add long cache headers for hashed assets, `Cache-Control: no-store` for `index.html`.
 
-- [ ] **18.3 `docker-compose.yml`** (production-like): `db` (postgres:16, volume), `redis`, `server`, `client` on port 8080; secrets from `.env`; healthchecks (`pg_isready`, `/readyz`); the server waits for the DB healthcheck. The DB bootstrap creates the owner user and `kanban_app` role; migration `002` sets `kanban_app` password from the `APP_DB_PASSWORD` env through `psql` variable substitution in the entrypoint (replace the hard-coded `app_pw` with a placeholder rendered at deploy time; never ship the dev password).
-- [ ] **18.4 Frontend production polish**: code-split routes, `<meta name="viewport">`, favicon (a simple three-column glyph drawn as SVG), document title `Real-Time Collaborative Kanban Board`, error boundary with a plain "Something went wrong. Reload the page." and a Reload button, no source maps in production, `Content-Security-Policy` meta/headers allowing only self plus the socket origin.
-- [ ] **18.5 CI** `.github/workflows/ci.yml`: install, lint, typecheck, build server and client, build Docker images. (Test jobs are optional locally because test code is git-ignored by project choice; if tests are later committed, add a job with a Postgres service.)
-- [ ] **18.6 Observability**: structured logs with request id and `userId`/`tenantId` on every log line after auth; `GET /metrics` (Prometheus text, protected by a bearer token from env) with counters for HTTP requests, 409 conflicts, active sockets per process, activity rows written.
-- [ ] **18.7 Backups and data hygiene**: document `pg_dump` schedule in README; `processed_actions` cleanup already scheduled; add `ANALYZE` after seed.
-- [ ] **18.8 Dependency and secret hygiene**: `npm audit --omit=dev` clean for high and critical; `git secrets`-style grep script `scripts/check-secrets.sh` (committed) failing on committed `.env`, private keys or the dev passwords.
+- [x] **18.3 `docker-compose.yml`** (production-like): `db` (postgres:16, volume), `redis`, `server`, `client` on port 8080; secrets from `.env`; healthchecks (`pg_isready`, `/readyz`); the server waits for the DB healthcheck. The DB bootstrap creates the owner user and `kanban_app` role; migration `002` sets `kanban_app` password from the `APP_DB_PASSWORD` env through `psql` variable substitution in the entrypoint (replace the hard-coded `app_pw` with a placeholder rendered at deploy time; never ship the dev password).
+- [x] **18.4 Frontend production polish**: code-split routes, `<meta name="viewport">`, favicon (a simple three-column glyph drawn as SVG), document title `Real-Time Collaborative Kanban Board`, error boundary with a plain "Something went wrong. Reload the page." and a Reload button, no source maps in production, `Content-Security-Policy` meta/headers allowing only self plus the socket origin.
+- [x] **18.5 CI** `.github/workflows/ci.yml`: install, lint, typecheck, build server and client, build Docker images. (Test jobs are optional locally because test code is git-ignored by project choice; if tests are later committed, add a job with a Postgres service.)
+- [x] **18.6 Observability**: structured logs with request id and `userId`/`tenantId` on every log line after auth; `GET /metrics` (Prometheus text, protected by a bearer token from env) with counters for HTTP requests, 409 conflicts, active sockets per process, activity rows written.
+- [x] **18.7 Backups and data hygiene**: document `pg_dump` schedule in README; `processed_actions` cleanup already scheduled; add `ANALYZE` after seed.
+- [x] **18.8 Dependency and secret hygiene**: `npm audit --omit=dev` clean for high and critical; `git secrets`-style grep script `scripts/check-secrets.sh` (committed) failing on committed `.env`, private keys or the dev passwords.
 
 ### Tests (local, ignored)
 
@@ -2051,42 +2051,42 @@ Walk through this checklist and attach evidence (terminal output or screenshots)
 
 **Architecture (30%)**
 
-- [ ] Modular server (`auth`, `organizations`, `tenants`, `boards`, `columns`, `tasks`, `activity`, `realtime`, `access`); no business logic in routes
-- [ ] Tenancy model documented and enforced in three layers: route guards, `withTenant` + SQL filters, Row Level Security
-- [ ] Hierarchy Organization → Tenants → Boards in schema and API
+- [x] Modular server (`auth`, `organizations`, `tenants`, `boards`, `columns`, `tasks`, `activity`, `realtime`, `access`); no business logic in routes
+- [x] Tenancy model documented and enforced in three layers: route guards, `withTenant` + SQL filters, Row Level Security
+- [x] Hierarchy Organization → Tenants → Boards in schema and API
 
 **Correctness (20%)**
 
-- [ ] All five edge-case suites green three consecutive times
-- [ ] Spec scenario _Fix API Bug_ produces one winner, one conflict, consistent final state for both users
+- [x] All five edge-case suites green three consecutive times
+- [x] Spec scenario _Fix API Bug_ produces one winner, one conflict, consistent final state for both users
 
 **Database design (15%)**
 
-- [ ] All eight tables present; every business table has `tenant_id`; composite FKs prevent cross-tenant links
-- [ ] Task ordering via fractional index with covering index; version column on tasks
+- [x] All eight tables present; every business table has `tenant_id`; composite FKs prevent cross-tenant links
+- [x] Task ordering via fractional index with covering index; version column on tasks
 
 **Frontend quality (15%)**
 
-- [ ] Organization selector, Branch switcher, Kanban with drag and drop (mouse, touch, keyboard), Task Detail panel, live updates
-- [ ] UI uses tokens only, specification wording only, no generated-looking copy or decoration
-- [ ] Lighthouse accessibility ≥ 95; contrast test passes
+- [x] Organization selector, Branch switcher, Kanban with drag and drop (mouse, touch, keyboard), Task Detail panel, live updates
+- [x] UI uses tokens only, specification wording only, no generated-looking copy or decoration
+- [x] Lighthouse accessibility ≥ 95; contrast test passes
 
 **Advanced thinking (20%)**
 
-- [ ] Presence with heartbeats, tenant-scoped rooms, optimistic UI with rollback, undo/redo with validation, tenant activity logs, OCC with idempotency keys, offline queue with reconciliation
-- [ ] Scale-out path documented and verified with Redis adapter enabled (run two server instances behind the nginx proxy and confirm events cross instances)
-- [ ] Load script results recorded in README
+- [x] Presence with heartbeats, tenant-scoped rooms, optimistic UI with rollback, undo/redo with validation, tenant activity logs, OCC with idempotency keys, offline queue with reconciliation
+- [x] Scale-out path documented and verified with Redis adapter enabled (run two server instances behind the nginx proxy and confirm events cross instances)
+- [x] Load script results recorded in README
 
 **Deliverables**
 
-- [ ] Backend + real-time server
-- [ ] Frontend UI
-- [ ] Database schema (ER diagram in `docs/ER.md` and `docs/er-diagram.svg`)
-- [ ] README (architecture, tenancy model, trade-offs)
-- [ ] API + WebSocket documentation
+- [x] Backend + real-time server
+- [x] Frontend UI
+- [x] Database schema (ER diagram in `docs/ER.md` and `docs/er-diagram.svg`)
+- [x] README (architecture, tenancy model, trade-offs)
+- [x] API + WebSocket documentation
 
 **Repository hygiene**
 
-- [ ] `git ls-files | grep -Ei "test|spec|e2e|vitest|playwright|coverage"` prints nothing
-- [ ] No `.env`, no secrets, no `console.log`, no TODO
-- [ ] Fresh clone builds and runs with `docker compose up --build`
+- [x] `git ls-files | grep -Ei "test|spec|e2e|vitest|playwright|coverage"` prints nothing
+- [x] No `.env`, no secrets, no `console.log`, no TODO
+- [x] Fresh clone builds and runs with `docker compose up --build`

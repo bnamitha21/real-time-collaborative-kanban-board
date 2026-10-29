@@ -99,6 +99,33 @@
   background: var(--offline);
 }
 
+.actionBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s1);
+  height: 28px;
+  padding: 0 var(--s2);
+  border-radius: var(--radius-sm);
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  color: var(--ink-2);
+  background: transparent;
+  border: 1px solid var(--line);
+  cursor: pointer;
+  transition: all 120ms ease;
+}
+
+.actionBtn:hover:not(:disabled) {
+  background: var(--surface-2);
+  color: var(--ink);
+  border-color: var(--ink-3);
+}
+
+.actionBtn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
 .userMenuWrapper {
   position: relative;
 }
@@ -204,3 +231,4 @@
   color: var(--ink);
   background: var(--surface-2);
 }
+

@@ -6,8 +6,16 @@ import {
   BranchIcon,
   ChevronDownIcon,
   CheckIcon,
+  UndoIcon,
+  RedoIcon,
+  ClockIcon,
 } from "../icons";
+import { PresenceStack } from "./PresenceStack";
 import { useSessionStore } from "../../store/session";
+import { useConnectionStore } from "../../realtime/connection";
+import { useHistoryStore } from "../../store/history";
+import { useActivityStore } from "../../store/activity";
+import { undo, redo } from "../../store/actions";
 import type { Role } from "../../lib/permissions";
 
 export function formatRole(role: Role | null | undefined): string {
@@ -29,6 +37,10 @@ export function TopBar() {
     logout,
   } = useSessionStore();
 
+  const connectionStatus = useConnectionStore((s) => s.status);
+  const { undoStack, redoStack } = useHistoryStore();
+  const setIsActivityOpen = useActivityStore((s) => s.setIsOpen);
+
   const [orgOpen, setOrgOpen] = useState(false);
   const [tenantOpen, setTenantOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
@@ -37,6 +49,35 @@ export function TopBar() {
   const orgRef = useRef<HTMLDivElement>(null);
   const tenantRef = useRef<HTMLDivElement>(null);
   const userRef = useRef<HTMLDivElement>(null);
+
+  // Global Undo / Redo keyboard shortcuts
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const activeEl = document.activeElement;
+      if (
+        activeEl instanceof HTMLInputElement ||
+        activeEl instanceof HTMLTextAreaElement ||
+        (activeEl as HTMLElement)?.isContentEditable
+      ) {
+        return;
+      }
+
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "z") {
+        if (e.shiftKey) {
+          e.preventDefault();
+          redo();
+        } else {
+          e.preventDefault();
+          undo();
+        }
+      } else if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "y") {
+        e.preventDefault();
+        redo();
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
 
   useEffect(() => {
     const handleOutsideClick = (e: MouseEvent) => {
@@ -62,6 +103,18 @@ export function TopBar() {
   const currentOrg = workspaces.find((w) => w.organization.id === activeOrgId);
   const currentTenant = currentOrg?.tenants.find((t) => t.id === activeTenantId);
   const currentRole = getActiveRole();
+
+  const lastUndo = undoStack[undoStack.length - 1];
+  const lastRedo = redoStack[redoStack.length - 1];
+  const undoTooltip = lastUndo ? `Undo ${lastUndo.kind} (${lastUndo.title})` : "Undo";
+  const redoTooltip = lastRedo ? `Redo ${lastRedo.kind} (${lastRedo.title})` : "Redo";
+
+  const statusLabel =
+    connectionStatus === "connected"
+      ? "Connected"
+      : connectionStatus === "reconnecting"
+      ? "Reconnecting…"
+      : "Offline";
 
   return (
     <header className={styles.topBar}>
@@ -188,10 +241,58 @@ export function TopBar() {
       </div>
 
       <div className={styles.rightSection}>
-        {/* Status indicator */}
-        <div className={styles.statusIndicator} title="Connected to server">
-          <span className={styles.statusDot} />
-          <span>Live</span>
+        {/* Presence Stack */}
+        <PresenceStack />
+
+        {/* Undo & Redo */}
+        <button
+          type="button"
+          className={styles.actionBtn}
+          onClick={() => undo()}
+          disabled={undoStack.length === 0}
+          title={undoTooltip}
+          aria-label="Undo"
+        >
+          <UndoIcon size={14} />
+          <span>Undo</span>
+        </button>
+
+        <button
+          type="button"
+          className={styles.actionBtn}
+          onClick={() => redo()}
+          disabled={redoStack.length === 0}
+          title={redoTooltip}
+          aria-label="Redo"
+        >
+          <RedoIcon size={14} />
+          <span>Redo</span>
+        </button>
+
+        {/* Activity Trigger */}
+        <button
+          type="button"
+          className={styles.actionBtn}
+          onClick={() => setIsActivityOpen(true)}
+          title="Open branch activity"
+          aria-label="Open activity"
+        >
+          <ClockIcon size={14} />
+          <span>Activity</span>
+        </button>
+
+        {/* Connection status indicator */}
+        <div className={styles.statusIndicator} title={statusLabel}>
+          <span
+            className={`${styles.statusDot} ${
+              connectionStatus === "connected"
+                ? ""
+                : connectionStatus === "reconnecting"
+                ? styles.reconnecting
+                : styles.offline
+            }`}
+          />
+          <span>{statusLabel}</span>
         </div>
 
         {/* Theme toggle */}

@@ -1,0 +1,100 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 600" width="100%" height="100%">
+  <defs>
+    <style>
+      .box { fill: #ffffff; stroke: #1e2a32; stroke-width: 1.5; rx: 6px; }
+      .header { fill: #1f5c5a; rx: 6px 6px 0 0; }
+      .htext { fill: #ffffff; font-family: 'Segoe UI', system-ui, sans-serif; font-size: 13px; font-weight: 600; }
+      .btext { fill: #1e2a32; font-family: 'JetBrains Mono', monospace; font-size: 11px; }
+      .line { stroke: #55626b; stroke-width: 1.5; fill: none; stroke-dasharray: 4, 3; }
+      .arrow { stroke: #1f5c5a; stroke-width: 1.5; fill: none; }
+      .title { font-family: 'Segoe UI', system-ui, sans-serif; font-size: 18px; font-weight: bold; fill: #1e2a32; }
+    </style>
+  </defs>
+
+  <rect width="100%" height="100%" fill="#f5f3ee" />
+  <text x="30" y="40" class="title">Database Schema &amp; Isolation Architecture</text>
+
+  <!-- Organizations -->
+  <g transform="translate(40, 70)">
+    <rect width="180" height="90" class="box" />
+    <path d="M0,0 h180 v26 h-180 z" class="header" />
+    <text x="15" y="18" class="htext">organizations</text>
+    <text x="15" y="45" class="btext">PK: id (uuid)</text>
+    <text x="15" y="65" class="btext">    name (text)</text>
+  </g>
+
+  <!-- Tenants (Branches) -->
+  <g transform="translate(320, 70)">
+    <rect width="210" height="110" class="box" />
+    <path d="M0,0 h210 v26 h-210 z" class="header" />
+    <text x="15" y="18" class="htext">tenants (branches)</text>
+    <text x="15" y="45" class="btext">PK: id (uuid)</text>
+    <text x="15" y="65" class="btext">FK: organization_id</text>
+    <text x="15" y="85" class="btext">    name (text)</text>
+    <text x="15" y="100" class="btext">UQ: (id, organization_id)</text>
+  </g>
+
+  <!-- Memberships -->
+  <g transform="translate(40, 220)">
+    <rect width="220" height="130" class="box" />
+    <path d="M0,0 h220 v26 h-220 z" class="header" />
+    <text x="15" y="18" class="htext">memberships</text>
+    <text x="15" y="45" class="btext">PK: id (uuid)</text>
+    <text x="15" y="65" class="btext">FK: user_id</text>
+    <text x="15" y="85" class="btext">FK: (tenant_id, org_id)</text>
+    <text x="15" y="105" class="btext">    role (enum)</text>
+  </g>
+
+  <!-- Users -->
+  <g transform="translate(40, 410)">
+    <rect width="180" height="110" class="box" />
+    <path d="M0,0 h180 v26 h-180 z" class="header" />
+    <text x="15" y="18" class="htext">users</text>
+    <text x="15" y="45" class="btext">PK: id (uuid)</text>
+    <text x="15" y="65" class="btext">    email (citext)</text>
+    <text x="15" y="85" class="btext">    name (text)</text>
+  </g>
+
+  <!-- Boards -->
+  <g transform="translate(620, 70)">
+    <rect width="220" height="120" class="box" />
+    <path d="M0,0 h220 v26 h-220 z" class="header" />
+    <text x="15" y="18" class="htext">boards</text>
+    <text x="15" y="45" class="btext">PK: id (uuid)</text>
+    <text x="15" y="65" class="btext">FK: (tenant_id, org_id)</text>
+    <text x="15" y="85" class="btext">    name (text)</text>
+    <text x="15" y="105" class="btext">UQ: (id, tenant_id)</text>
+  </g>
+
+  <!-- Columns -->
+  <g transform="translate(620, 240)">
+    <rect width="220" height="120" class="box" />
+    <path d="M0,0 h220 v26 h-220 z" class="header" />
+    <text x="15" y="18" class="htext">columns (3 predefined)</text>
+    <text x="15" y="45" class="btext">PK: id (uuid)</text>
+    <text x="15" y="65" class="btext">FK: (board_id, tenant_id)</text>
+    <text x="15" y="85" class="btext">    key ('todo'|'in_prog'...)</text>
+    <text x="15" y="105" class="btext">UQ: (board_id, key)</text>
+  </g>
+
+  <!-- Tasks -->
+  <g transform="translate(340, 390)">
+    <rect width="260" height="170" class="box" />
+    <path d="M0,0 h260 v26 h-260 z" class="header" />
+    <text x="15" y="18" class="htext">tasks (fractional index &amp; OCC)</text>
+    <text x="15" y="45" class="btext">PK: id (uuid)</text>
+    <text x="15" y="65" class="btext">FK: (board_id, tenant_id)</text>
+    <text x="15" y="85" class="btext">FK: (column_id, board_id)</text>
+    <text x="15" y="105" class="btext">    position (text COLLATE "C")</text>
+    <text x="15" y="125" class="btext">    version (int OCC)</text>
+    <text x="15" y="145" class="btext">    priority ('low'|'med'|'high')</text>
+  </g>
+
+  <!-- Connectors -->
+  <path d="M 220 115 L 320 115" class="arrow" />
+  <path d="M 530 115 L 620 115" class="arrow" />
+  <path d="M 730 190 L 730 240" class="arrow" />
+  <path d="M 620 300 L 470 300 L 470 390" class="arrow" />
+  <path d="M 130 350 L 130 410" class="arrow" />
+  <path d="M 220 450 L 340 450" class="arrow" />
+</svg>

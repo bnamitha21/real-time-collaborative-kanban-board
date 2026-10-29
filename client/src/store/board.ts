@@ -174,3 +174,4 @@ export const useBoardStore = create<BoardState>((set, get) => ({
   setLoading: (loading: boolean) => set({ loading }),
   setError: (error: string | null) => set({ error }),
 }));
+
