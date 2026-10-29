@@ -8,6 +8,7 @@ from flask_cors import CORS
 from server.src.config.env import env
 from server.src.db.pool import DATABASE_URL
 from server.src.lib.errors import AppError
+from server.src.modules.access.routes import workspaces_bp
 from server.src.modules.auth.routes import auth_bp
 
 # Configure structured logging
@@ -62,6 +63,7 @@ def create_app() -> Flask:
 
     # Mount routes
     app.register_blueprint(auth_bp)
+    app.register_blueprint(workspaces_bp)
 
     # Error handlers
     @app.errorhandler(AppError)
