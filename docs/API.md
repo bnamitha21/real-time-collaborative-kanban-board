@@ -265,3 +265,4 @@ Cookies: Refresh tokens are issued as HTTP-only secure cookies (`refresh`) on `/
     "nextCursor": "string | null"
   }
   ```
+

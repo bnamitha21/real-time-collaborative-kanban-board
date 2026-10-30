@@ -80,3 +80,4 @@ export const useHistoryStore = create<HistoryState>((set, get) => ({
 
   clear: () => set({ undoStack: [], redoStack: [] }),
 }));
+

@@ -46,3 +46,4 @@ In this architecture, every tenant-scoped table (`boards`, `columns`, `tasks`, `
 
 ### Impossible Cross-Tenant Links
 Because the foreign key on `tasks` binds `(board_id, tenant_id)` together to `boards(id, tenant_id)`, and `(column_id, board_id)` to `columns(id, board_id)`, it is mathematically impossible for a task in Branch A to reference a column or board in Branch B. The PostgreSQL engine rejects any mismatched tenant foreign keys even if an application bug attempts it.
+

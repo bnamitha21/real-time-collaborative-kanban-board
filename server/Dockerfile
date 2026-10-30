@@ -31,3 +31,4 @@ USER appuser
 EXPOSE 4000
 
 CMD ["sh", "-c", "python -m server.src.db.migrate && python -m server.src.main"]
+

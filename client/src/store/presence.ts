@@ -19,3 +19,4 @@ export const usePresenceStore = create<PresenceState>((set) => ({
   setUsers: (users) => set({ users }),
   clear: () => set({ users: [] }),
 }));
+

@@ -9,10 +9,11 @@ columns_bp = Blueprint("columns", __name__, url_prefix="/api/v1")
 
 
 @columns_bp.get("/boards/<board_id>/columns")
+@columns_bp.get("/tenants/<tenant_id>/boards/<board_id>/columns")
 @authenticate
 @validate_request()
 @require_tenant_access("column.read")
-def handle_list_columns(board_id: str):
+def handle_list_columns(board_id: str, tenant_id: str | None = None):
     columns = list_board_columns(
         tenant_id=g.tenant_id,
         board_id=board_id,

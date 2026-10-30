@@ -130,3 +130,4 @@ Broadcast to `user:{userId}` when an administrator removes the user from a branc
 }
 ```
 Client immediately clears the board state and drops the socket room.
+

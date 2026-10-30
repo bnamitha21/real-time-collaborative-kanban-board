@@ -50,10 +50,11 @@ def handle_list_boards(tenant_id: str):
 
 
 @boards_bp.get("/boards/<board_id>")
+@boards_bp.get("/tenants/<tenant_id>/boards/<board_id>")
 @authenticate
 @validate_request()
 @require_tenant_access("board.read")
-def handle_get_board_snapshot(board_id: str):
+def handle_get_board_snapshot(board_id: str, tenant_id: str | None = None):
     snapshot = get_board_snapshot(
         tenant_id=g.tenant_id,
         board_id=board_id,

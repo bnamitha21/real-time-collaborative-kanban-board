@@ -90,3 +90,4 @@ export const useActivityStore = create<ActivityState>((set) => ({
   clear: () => set({ items: [], nextCursor: null }),
   setLoading: (loading) => set({ loading }),
 }));
+

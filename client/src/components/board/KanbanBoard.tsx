@@ -153,14 +153,13 @@ export function KanbanBoard() {
 
       setLoading(true);
       try {
-        const [columnsRes, tasksRes] = await Promise.all([
-          http.get<{ data: ColumnDto[] }>(
-            `/tenants/${activeTenantId}/boards/${bId}/columns`,
-          ),
-          http.get<{ data: TaskDto[] }>(
-            `/tenants/${activeTenantId}/boards/${bId}/tasks`,
-          ),
-        ]);
+        const res = await http.get<{
+          data: {
+            board: BoardSummary;
+            columns: ColumnDto[];
+            tasks: TaskDto[];
+          };
+        }>(`/boards/${bId}`);
 
         if (epochAtStart !== useSessionStore.getState().requestEpoch) {
           return;
@@ -168,8 +167,8 @@ export function KanbanBoard() {
 
         load({
           boardId: bId,
-          columns: columnsRes.data || [],
-          tasks: tasksRes.data || [],
+          columns: res.data.columns || [],
+          tasks: res.data.tasks || [],
         });
       } catch {
         clear();
@@ -202,11 +201,12 @@ export function KanbanBoard() {
 
     try {
       const res = await http.post<{ data: TaskDto }>(
-        `/tenants/${activeTenantId}/boards/${selectedBoardId}/tasks`,
+        `/boards/${selectedBoardId}/tasks`,
         {
           columnId,
           title,
           priority: "medium",
+          actionId: crypto.randomUUID(),
         },
       );
       applyServerTask(res.data);

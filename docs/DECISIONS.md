@@ -42,3 +42,4 @@
   - 15-minute JWT access tokens kept strictly in memory in the SPA.
   - 7-day rotating refresh tokens stored hashed in PostgreSQL and transmitted via an `HttpOnly`, `SameSite=Lax` secure cookie.
 - **Consequences**: Fast stateless request verification; immediate access revocation upon tenant membership removal via `access:revoked` event.
+

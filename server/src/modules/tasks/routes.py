@@ -20,11 +20,24 @@ from server.src.realtime.publisher import publish_to_board
 tasks_bp = Blueprint("tasks", __name__, url_prefix="/api/v1")
 
 
+@tasks_bp.get("/boards/<board_id>/tasks")
+@tasks_bp.get("/tenants/<tenant_id>/boards/<board_id>/tasks")
+@authenticate
+@validate_request()
+@require_tenant_access("task.read")
+def handle_list_board_tasks(board_id: str, tenant_id: str | None = None):
+    from server.src.modules.boards.service import get_board_snapshot
+
+    snapshot = get_board_snapshot(tenant_id=g.tenant_id, board_id=board_id)
+    return jsonify({"data": snapshot["tasks"]}), 200
+
+
 @tasks_bp.post("/boards/<board_id>/tasks")
+@tasks_bp.post("/tenants/<tenant_id>/boards/<board_id>/tasks")
 @authenticate
 @validate_request(body_model=CreateTaskSchema)
 @require_tenant_access("task.create")
-def handle_create_task(board_id: str):
+def handle_create_task(board_id: str, tenant_id: str | None = None):
     body: CreateTaskSchema = g.validated_body
     task, replayed = create_task(
         org_id=g.access.organization_id,

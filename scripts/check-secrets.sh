@@ -42,3 +42,4 @@ fi
 
 echo "=== Secrets & Credentials Scan PASSED ==="
 exit 0
+

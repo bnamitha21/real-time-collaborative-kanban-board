@@ -11,3 +11,4 @@ export const useConnectionStore = create<ConnectionState>((set) => ({
   status: "reconnecting",
   setStatus: (status: ConnectionStatus) => set({ status }),
 }));
+
