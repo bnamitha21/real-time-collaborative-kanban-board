@@ -6,6 +6,16 @@
   background: var(--bg);
 }
 
+.offlineBanner {
+  background: var(--progress);
+  color: var(--progress-ink);
+  border-bottom: 1px solid var(--line);
+  padding: var(--s2) var(--s5);
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  text-align: center;
+}
+
 .boardHeader {
   display: flex;
   align-items: center;

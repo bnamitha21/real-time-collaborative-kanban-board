@@ -26,6 +26,7 @@ import { useHistoryStore } from "../../store/history";
 import { useActivityStore } from "../../store/activity";
 import { moveTask } from "../../store/actions";
 import { subscribeBoard, unsubscribeBoard } from "../../realtime/socket";
+import { useConnectionStore } from "../../realtime/connection";
 import { can } from "../../lib/permissions";
 
 export interface BoardSummary {
@@ -35,8 +36,8 @@ export interface BoardSummary {
 
 export function KanbanBoard() {
   const { user, activeTenantId, getActiveRole, requestEpoch } = useSessionStore();
+  const connectionStatus = useConnectionStore((s) => s.status);
   const {
-    boardId,
     columns,
     tasks,
     order,
@@ -148,9 +149,14 @@ export function KanbanBoard() {
 
   // Load board snapshot when selectedBoardId changes
   const fetchBoardSnapshot = useCallback(
-    async (bId: string, epochAtStart: number) => {
+    async (bId: string) => {
       if (!activeTenantId || !bId) return;
 
+      // Capture current epoch synchronously — before any await
+      const epochAtStart = useSessionStore.getState().requestEpoch;
+
+      // Clear stale board data before loading new snapshot
+      clear();
       setLoading(true);
       try {
         const res = await http.get<{
@@ -161,6 +167,7 @@ export function KanbanBoard() {
           };
         }>(`/boards/${bId}`);
 
+        // Guard: abort if tenant/org switched while we were fetching
         if (epochAtStart !== useSessionStore.getState().requestEpoch) {
           return;
         }
@@ -182,12 +189,12 @@ export function KanbanBoard() {
   useEffect(() => {
     if (selectedBoardId) {
       subscribeBoard(selectedBoardId);
-      fetchBoardSnapshot(selectedBoardId, requestEpoch);
+      fetchBoardSnapshot(selectedBoardId);
       return () => {
         unsubscribeBoard(selectedBoardId);
       };
     }
-  }, [selectedBoardId, fetchBoardSnapshot, requestEpoch]);
+  }, [selectedBoardId, fetchBoardSnapshot]);
 
   // Handle task click to open detail drawer
   const handleTaskClick = (task: TaskDto) => {
@@ -290,7 +297,7 @@ export function KanbanBoard() {
       setToastMessage("Task saved successfully");
     } catch {
       setToastMessage("Failed to save task: concurrent change detected");
-      if (selectedBoardId) fetchBoardSnapshot(selectedBoardId, requestEpoch);
+      if (selectedBoardId) fetchBoardSnapshot(selectedBoardId);
     }
   };
 
@@ -363,7 +370,7 @@ export function KanbanBoard() {
     setActiveTaskId(null);
 
     if (!over) {
-      if (selectedBoardId) fetchBoardSnapshot(selectedBoardId, requestEpoch);
+      if (selectedBoardId) fetchBoardSnapshot(selectedBoardId);
       return;
     }
 
@@ -421,6 +428,13 @@ export function KanbanBoard() {
 
   return (
     <div className={styles.boardWrapper}>
+      {/* Offline banner (spec requirement) */}
+      {connectionStatus === "offline" && (
+        <div className={styles.offlineBanner} role="alert">
+          <span>You are offline. Changes are pending and are not saved yet.</span>
+        </div>
+      )}
+
       {/* Polite live region for screen readers */}
       <div aria-live="polite" className={styles.srOnly}>
         {announcement}
@@ -462,7 +476,7 @@ export function KanbanBoard() {
       </div>
 
       {/* Loading state */}
-      {loading && !boardId ? (
+      {loading ? (
         <div className={styles.loadingContainer}>
           <Spinner size="md" />
           <span>Loading board…</span>

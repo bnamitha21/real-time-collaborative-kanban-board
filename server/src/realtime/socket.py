@@ -19,11 +19,12 @@ from server.src.realtime.presence import (
 from server.src.realtime.publisher import set_socketio
 
 socketio = SocketIO(
-    cors_allowed_origins="*",
+    cors_allowed_origins="*" if env.FLASK_ENV == "development" else [env.CLIENT_ORIGIN],
     max_http_buffer_size=100_000,
     ping_timeout=8,
     ping_interval=10,
     manage_session=False,
+    message_queue=env.REDIS_URL if env.REDIS_URL else None,
 )
 
 
