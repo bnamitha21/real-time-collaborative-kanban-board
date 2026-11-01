@@ -3,7 +3,7 @@ $ErrorActionPreference = "Stop"
 $ApiBase = if ($env:API_BASE) { $env:API_BASE } else { "http://127.0.0.1:4000/api/v1" }
 
 Write-Host "1. Checking API health..."
-$health = Invoke-RestMethod -Uri "$ApiBase/../healthz" -Method Get
+$health = Invoke-RestMethod -Uri "http://127.0.0.1:4000/healthz" -Method Get
 Write-Host "API is healthy: $($health.status)"
 
 Write-Host "2. Logging in..."
@@ -26,4 +26,3 @@ Write-Host "4. Listing boards for tenant..."
 $boards = Invoke-RestMethod -Uri "$ApiBase/tenants/$tenantId/boards" -Method Get -Headers $headers
 Write-Host "Boards: $($boards | ConvertTo-Json -Depth 3)"
 Write-Host "Smoke test complete."
-

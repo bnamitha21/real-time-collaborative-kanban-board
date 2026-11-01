@@ -266,3 +266,60 @@ Cookies: Refresh tokens are issued as HTTP-only secure cookies (`refresh`) on `/
   }
   ```
 
+
+
+---
+
+## 9. Example cURL Workflows
+
+### 9.1 Login
+```bash
+curl -X POST http://localhost:4000/api/v1/auth/login \
+  -H "Content-Type: application/json" \
+  -c cookies.txt \
+  -d '{"email": "admin.hyd@northwind.test", "password": "Passw0rd!"}'
+```
+
+### 9.2 Fetch Workspaces & Active Tenant
+```bash
+curl -X GET http://localhost:4000/api/v1/me/workspaces \
+  -H "Authorization: Bearer <ACCESS_TOKEN>"
+```
+
+### 9.3 List Boards for Tenant
+```bash
+curl -X GET http://localhost:4000/api/v1/tenants/<TENANT_ID>/boards \
+  -H "Authorization: Bearer <ACCESS_TOKEN>"
+```
+
+### 9.4 Create a Task
+```bash
+curl -X POST http://localhost:4000/api/v1/tenants/<TENANT_ID>/boards/<BOARD_ID>/tasks \
+  -H "Authorization: Bearer <ACCESS_TOKEN>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "columnId": "<COLUMN_ID>",
+    "title": "Design Database Schema",
+    "description": "PostgreSQL 16 with RLS policies",
+    "priority": "high"
+  }'
+```
+
+### 9.5 Move a Task (OCC Protected)
+```bash
+curl -X POST http://localhost:4000/api/v1/tasks/<TASK_ID>/move \
+  -H "Authorization: Bearer <ACCESS_TOKEN>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "expectedVersion": 1,
+    "toColumnId": "<NEW_COLUMN_ID>",
+    "afterTaskId": null,
+    "actionId": "c9bf9e57-1685-4c89-bafb-ff5af830be8a"
+  }'
+```
+
+### 9.6 View Tenant Activity Audit Log
+```bash
+curl -X GET "http://localhost:4000/api/v1/tenants/<TENANT_ID>/activity?limit=20" \
+  -H "Authorization: Bearer <ACCESS_TOKEN>"
+```

@@ -30,7 +30,7 @@
 - **Decision**:
   1. Every business table explicitly includes `tenant_id`.
   2. Composite foreign keys enforce that tasks cannot reference columns of other tenants.
-  3. Row Level Security (`tenant_isolation_policy`) acts as a second, defense-in-depth isolation layer using `app.tenant_id`.
+  3. Row Level Security (`tenant_isolation`) acts as a second, defense-in-depth isolation layer using `app.tenant_id`.
 - **Consequences**: Impossible to leak or write data across tenant boundaries even if an application SQL query omits a WHERE clause.
 
 ---
@@ -41,5 +41,20 @@
 - **Decision**:
   - 15-minute JWT access tokens kept strictly in memory in the SPA.
   - 7-day rotating refresh tokens stored hashed in PostgreSQL and transmitted via an `HttpOnly`, `SameSite=Lax` secure cookie.
-- **Consequences**: Fast stateless request verification; immediate access revocation upon tenant membership removal via `access:revoked` event.
+- **Consequences**: Fast stateless request verification; immediate access revocation upon tenant membership removal via `access:revoked` event. Tokens carry no roles or tenant IDs so privilege updates take effect immediately.
 
+---
+
+## ADR 06: Raw SQL & Native Migrations over Heavy ORM
+- **Status**: Accepted
+- **Context**: Multi-tenancy with PostgreSQL RLS requires precise control over session variables (`set_config('app.tenant_id', ...)`), composite foreign key constraints, binary collation indexes, and explicit row-level locks (`SELECT ... FOR UPDATE`).
+- **Decision**: Use `psycopg3` (with `psycopg_pool`) and pure SQL migrations rather than an abstracted ORM.
+- **Consequences**: Zero ORM magic or leaky abstractions. Complete transparency over queries, isolation policies, transaction boundaries, and index utilization (`tasks_column_order_idx`).
+
+---
+
+## ADR 07: Native Local PostgreSQL & pgAdmin over Containerization
+- **Status**: Accepted
+- **Context**: Docker containers introduced virtualization overhead, port forwarding conflicts, and friction on Windows developer machines without hypervisor virtualization.
+- **Decision**: Remove Docker entirely and run directly against a native, local PostgreSQL 16 Windows service, managed visually via pgAdmin 4.
+- **Consequences**: Native database I/O performance on Windows; direct table inspection and schema verification through pgAdmin 4; lightweight local developer experience.

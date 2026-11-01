@@ -92,16 +92,17 @@ jobs:
           pip install -r server/requirements.txt
           pip install pytest pytest-asyncio httpx
 
-      - name: Run Alembic Migrations
+      - name: Run Migrations
         env:
-          DATABASE_URL: postgresql+asyncpg://owner:owner_pw@localhost:5432/kanban
+          DATABASE_URL_OWNER: postgresql://owner:owner_pw@localhost:5432/kanban
         run: python -m server.src.db.migrate
 
       - name: Run Backend Pytest Suite
         env:
-          DATABASE_URL: postgresql+asyncpg://owner:owner_pw@localhost:5432/kanban
+          DATABASE_URL_OWNER: postgresql://owner:owner_pw@localhost:5432/kanban
+          DATABASE_URL: postgresql://kanban_app:app_pw@localhost:5432/kanban
           REDIS_URL: redis://localhost:6379/0
-          JWT_SECRET: test_jwt_secret_key_ci_only_32_chars_minimum
+          JWT_ACCESS_SECRET: test_jwt_secret_key_ci_only_32_chars_minimum
         run: pytest server/tests
 
   test-frontend:
@@ -126,28 +127,3 @@ jobs:
 
       - name: Run Client Production Build
         run: npm run build -w client
-
-  docker-build:
-    name: Verify Docker Images
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Set up Docker Buildx
-        uses: actions/setup-buildx-action@v3
-
-      - name: Build Server Docker Image
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          file: server/Dockerfile
-          push: false
-
-      - name: Build Client Docker Image
-        uses: docker/build-push-action@v5
-        with:
-          context: ./client
-          file: client/Dockerfile
-          push: false
-

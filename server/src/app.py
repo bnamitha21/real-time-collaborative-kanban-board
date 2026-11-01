@@ -6,7 +6,7 @@ from flask import Flask, g, jsonify, request
 from flask_cors import CORS
 
 from server.src.config.env import env
-from server.src.db.pool import DATABASE_URL
+from server.src.db.pool import DATABASE_URL, pool
 from server.src.lib.errors import AppError
 from server.src.modules.access.routes import workspaces_bp
 from server.src.modules.activity.routes import activity_bp
@@ -37,6 +37,14 @@ def create_app() -> Flask:
         origins=[env.CLIENT_ORIGIN],
         supports_credentials=True,
     )
+
+    # Open the connection pool when the app starts
+    with app.app_context():
+        try:
+            pool.open(wait=True, timeout=5)
+            logger.info("Database connection pool opened.")
+        except Exception as exc:
+            logger.warning(f"Could not open DB pool at startup: {exc}")
 
     # Middleware: Request ID and logging
     @app.before_request

@@ -12,7 +12,12 @@
     "typecheck:server": "mypy server/src",
     "lint:server": "ruff check server",
     "test:server": "pytest server/tests",
-    "test:client": "npm run test -w client"
+    "test:client": "npm run test -w client",
+    "db:setup": "python scripts/init_db.py --seed",
+    "db:start": "powershell -ExecutionPolicy Bypass -File scripts/start_db.ps1",
+    "db:stop": "powershell -ExecutionPolicy Bypass -File scripts/stop_db.ps1",
+    "db:status": "powershell -ExecutionPolicy Bypass -File scripts/status_db.ps1",
+    "db:migrate": "python -m server.src.db.migrate",
+    "db:seed": "python -m server.src.db.seed"
   }
 }
-

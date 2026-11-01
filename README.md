@@ -122,31 +122,23 @@ Tasks are sorted within columns using variable-length fractional index strings (
 ### Prerequisites
 - Python 3.12+
 - Node.js 20+
-- PostgreSQL 16 (local or Docker)
+- PostgreSQL 16 (Local service running on port 5432) & pgAdmin 4
 
-### 1. Start PostgreSQL
-```bash
-docker run --name kanban-pg -e POSTGRES_USER=owner -e POSTGRES_PASSWORD=owner_pw -e POSTGRES_DB=kanban -p 5432:5432 -d postgres:16-alpine
+### 1. Database Setup & Control
+The project runs natively against local PostgreSQL 16 (no Docker required).
+
+```powershell
+# Check status of local PostgreSQL service
+npm run db:status
+
+# Initialize database, create roles, run migrations & seed data
+npm run db:setup
+# (or: python scripts/init_db.py --seed)
 ```
 
-### 2. Configure Environment
-Create `.env` in the root:
-```env
-DATABASE_URL_OWNER=postgresql://owner:owner_pw@localhost:5432/kanban
-DATABASE_URL=postgresql://kanban_app:app_pw@localhost:5432/kanban
-JWT_ACCESS_SECRET=super_secret_access_key_12345
-JWT_REFRESH_SECRET=super_secret_refresh_key_12345
-FLASK_ENV=development
-PORT=4000
-```
+You can view all databases, tables, and roles visually using **pgAdmin 4** (installed with PostgreSQL).
 
-### 3. Run Migrations & Seed Data
-```bash
-python -m server.src.db.migrate
-python -m server.src.db.seed
-```
-
-### 4. Start Development Servers
+### 2. Start Development Servers
 ```bash
 # Terminal 1: Backend server (port 4000)
 npm run dev:server
@@ -158,31 +150,104 @@ Navigate to: **`http://localhost:5173/`**
 
 ---
 
-## 10. Seed Accounts & Roles
+## 10. Environment Variables
+
+Create or verify `.env` in the root directory:
+
+| Variable | Default Value | Description |
+|---|---|---|
+| `DATABASE_URL_OWNER` | `postgresql://owner:owner_pw@localhost:5432/kanban` | DSN for schema migrations & seed (bypasses RLS) |
+| `DATABASE_URL` | `postgresql://kanban_app:app_pw@localhost:5432/kanban` | Application queries role (PostgreSQL RLS enforced) |
+| `JWT_ACCESS_SECRET` | *(32+ char secret)* | Secret key for signing in-memory access tokens |
+| `JWT_ACCESS_TTL_SECONDS` | `900` (15 min) | Access token lifespan |
+| `REFRESH_TTL_DAYS` | `14` | Refresh token lifespan in HttpOnly cookie |
+| `FLASK_ENV` | `development` | Flask runtime environment |
+| `PORT` | `4000` | Backend server port |
+| `CLIENT_ORIGIN` | `http://localhost:5173` | Allowed CORS origin |
+| `LOG_LEVEL` | `INFO` | Logging verbosity |
+
+---
+
+## 11. Project Structure
+
+```
+kanban/
+├── client/                     # React 18 TypeScript Frontend
+│   ├── src/
+│   │   ├── api/                # HTTP & Axios client with auto-refresh
+│   │   ├── components/         # Board, Column, TaskCard, Dialogs, UI components
+│   │   ├── lib/                # Permissions, types, fractional index helpers
+│   │   ├── pages/              # LoginPage, BoardPage
+│   │   ├── realtime/           # Socket.IO connection and event dispatchers
+│   │   ├── store/              # Zustand state stores (board, session, offlineQueue)
+│   │   └── styles/             # Design tokens and CSS modules
+│   └── package.json
+├── server/                     # Flask Backend Application
+│   ├── migrations/             # Idempotent raw SQL migration scripts
+│   │   ├── 001_init.sql        # Core relational tables & constraints
+│   │   ├── 002_rls.sql         # Row Level Security policies & kanban_app role
+│   │   ├── 003_scope_fns.sql   # Security definer helper functions
+│   │   └── 004_column_scope.sql# Column security function
+│   ├── src/
+│   │   ├── config/             # Environment validation with Pydantic
+│   │   ├── db/                 # psycopg3 connection pool & migration runner
+│   │   ├── middleware/         # Auth, RLS tenancy, rate limiting, validation
+│   │   ├── modules/            # Auth, Organizations, Tenants, Boards, Columns, Tasks, Activity
+│   │   ├── realtime/           # Socket.IO rooms, presence, event publishers
+│   │   ├── app.py              # Flask application factory
+│   │   └── main.py             # Server entrypoint with auto-migration
+│   └── requirements.txt
+├── docs/                       # Project Documentation
+│   ├── API.md                  # Complete REST API specification with cURL examples
+│   ├── DATABASE_SETUP.md       # PostgreSQL & pgAdmin setup instructions
+│   ├── DECISIONS.md            # Architecture Decision Records (ADRs)
+│   ├── ER.md                   # Entity-Relationship diagram & composite FK details
+│   ├── er-diagram.svg          # Visual SVG export of the ER diagram
+│   └── WEBSOCKET.md            # Socket.IO real-time protocol specification
+├── scripts/                    # Automation & Maintenance Scripts
+│   ├── init_db.py              # Cross-platform DB initializer & RLS verifier
+│   ├── setup_db.ps1            # Windows PostgreSQL setup helper
+│   ├── start_db.ps1            # Start local PostgreSQL service
+│   ├── stop_db.ps1             # Stop local PostgreSQL service
+│   ├── status_db.ps1           # Check local PostgreSQL status
+│   └── smoke.ps1               # Automated end-to-end smoke test
+├── package.json                # Monorepo scripts (db:start, dev:server, dev:client)
+└── README.md                   # Comprehensive project documentation
+```
+
+---
+
+## 12. Seed Accounts & Roles
+
+All accounts are pre-seeded with password: **`Passw0rd!`**
 
 | Role | Email | Password | Scope |
 |---|---|---|---|
-| **Org Admin** | `orgadmin@northwind.test` | `Passw0rd!` | All branches in Northwind |
+| **Org Admin** | `orgadmin@northwind.test` | `Passw0rd!` | All branches in Northwind Traders |
 | **Tenant Admin** | `admin.hyd@northwind.test` | `Passw0rd!` | Hyderabad branch administrator |
 | **Member** | `member.hyd@northwind.test` | `Passw0rd!` | Hyderabad branch member |
+| **Member 2** | `member2.hyd@northwind.test` | `Passw0rd!` | Hyderabad branch member |
+| **Tenant Admin (VJA)** | `admin.vja@northwind.test` | `Passw0rd!` | Vijayawada branch administrator |
+| **Org Admin (Contoso)** | `admin@contoso.test` | `Passw0rd!` | Contoso Retail administrator |
 | **Multi-Branch Member** | `multi@northwind.test` | `Passw0rd!` | Member in Hyderabad & Vijayawada |
 
 ---
 
-## 11. Security Checklist
+## 13. Security Checklist
 
-- [x] Passwords hashed with Argon2id (memoryCost: 65536, timeCost: 3).
-- [x] JWT access tokens kept only in memory (15m TTL).
+- [x] Passwords hashed with Argon2id (`argon2-cffi`).
+- [x] JWT access tokens kept strictly in memory (15m TTL).
 - [x] Rotating refresh tokens in `HttpOnly`, `SameSite=Lax` cookies.
 - [x] Sliding-window rate limiting on sensitive routes.
 - [x] Database Row Level Security (RLS) active on all business tables.
 - [x] Composite foreign keys preventing cross-tenant references.
 - [x] Zero hardcoded colors outside `client/src/styles/tokens.css`.
-- [x] Production Docker containers execute as unprivileged non-root users.
+- [x] Database application queries execute under restricted non-owner role (`kanban_app`) with RLS.
+- [x] Strict 404-not-403 tenant discovery prevention.
 
 ---
 
-## 12. Testing
+## 14. Testing
 
 All test code (`server/tests/` and `client/tests/`) is maintained locally and strictly excluded from git tracking via `.gitignore`.
 
@@ -191,14 +256,17 @@ Run the test suites locally:
 # Backend pytest suite (51 tests)
 pytest server/tests
 
-# Backend linting & static types
-ruff check server
+# Backend static types & lint
 mypy server/src
+ruff check server
 
 # Frontend Vitest suite (39 tests)
 npm test -w client
 
-# Frontend type checking
+# Frontend type checking & build
 npm run typecheck -w client
-```
+npm run build -w client
 
+# End-to-end API smoke test
+powershell -ExecutionPolicy Bypass -File .\scripts\smoke.ps1
+```
